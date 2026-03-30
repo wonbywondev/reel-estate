@@ -14,6 +14,6 @@ class Room:
     id: Optional[int] = None
     lat: Optional[float] = None
     lng: Optional[float] = None
-    subway_info: Optional[dict] = None  # {"station": "강남역", "walk_min": 5}
+    subway_info: Optional[list[dict]] = None  # [{"station": "강남역", "walk_min": 5, ...}]
     video_path: Optional[str] = None
     created_at: Optional[str] = None
