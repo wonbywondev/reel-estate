@@ -49,7 +49,7 @@ def _search_nearby_stations(lat: float, lng: float) -> list[dict]:
     }
     resp = requests.get(
         SEARCH_URL,
-        params={"query": "지하철역", "display": 5, "sort": "comment"},
+        params={"query": "지하철역", "display": 5, "sort": "comment", "coordinate": f"{lng},{lat}"},
         headers=headers,
     )
     resp.raise_for_status()
