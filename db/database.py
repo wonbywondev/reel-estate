@@ -1,6 +1,5 @@
 import json
 import sqlite3
-from pathlib import Path
 from typing import Optional
 
 from db.models import Room
@@ -11,12 +10,17 @@ DEFAULT_DB_PATH = "realestate.db"
 class Database:
     def __init__(self, db_path: str = DEFAULT_DB_PATH):
         self.db_path = db_path
-        self.conn: Optional[sqlite3.Connection] = None
+        self._conn: Optional[sqlite3.Connection] = None
+
+    @property
+    def conn(self) -> sqlite3.Connection:
+        assert self._conn is not None, "Database not initialized. Call init() first."
+        return self._conn
 
     def init(self):
-        self.conn = sqlite3.connect(self.db_path)
-        self.conn.row_factory = sqlite3.Row
-        self.conn.execute("""
+        self._conn = sqlite3.connect(self.db_path)
+        self._conn.row_factory = sqlite3.Row
+        self._conn.execute("""
             CREATE TABLE IF NOT EXISTS rooms (
                 id            INTEGER PRIMARY KEY AUTOINCREMENT,
                 address       TEXT NOT NULL,
@@ -33,11 +37,11 @@ class Database:
                 created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        self.conn.commit()
+        self._conn.commit()
 
     def close(self):
-        if self.conn:
-            self.conn.close()
+        if self._conn:
+            self._conn.close()
 
     def insert_room(self, room: Room) -> int:
         cur = self.conn.execute(
@@ -55,7 +59,7 @@ class Database:
             ),
         )
         self.conn.commit()
-        return cur.lastrowid
+        return cur.lastrowid or 0
 
     def get_room(self, room_id: int) -> Optional[Room]:
         row = self.conn.execute(
