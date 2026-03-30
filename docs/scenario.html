@@ -1,0 +1,722 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>[AI] 고급프로젝트 가이드   </title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="123e4a29-6d9d-83e5-9718-01d9bcbabce2" class="page sans"><header><img class="page-cover-image" src="%5BAI%5D%20%EA%B3%A0%EA%B8%89%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EA%B0%80%EC%9D%B4%EB%93%9C/%25E1%2584%2589%25E1%2585%25B3%25E1%2584%258F%25E1%2585%25B3%25E1%2584%2585%25E1%2585%25B5%25E1%2586%25AB%25E1%2584%2589%25E1%2585%25A3%25E1%2586%25BA_2024-07-14_%25E1%2584%258B%25E1%2585%25A9%25E1%2584%2592%25E1%2585%25AE_11.44.47.png" style="object-position:center 50%"/><div class="page-header-icon page-header-icon-with-cover"><span class="icon">⚡</span></div><h1 class="page-title" dir="auto">[AI] 고급프로젝트 가이드   </h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div style="display:contents" dir="auto"><p id="333e4a29-6d9d-804b-bf05-e75c3bc90e58" class="">
+</p></div><div style="display:contents" dir="ltr"><figure id="333e4a29-6d9d-8003-85aa-f1395047b7fb" class="link-to-page"><a href="https://www.notion.so/1-333e4a296d9d800385aaf1395047b7fb?pvs=21">1차 논의</a></figure></div><div style="display:contents" dir="auto"><p id="ba5e4a29-6d9d-83be-8bcd-0193dc4d17cd" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="4c2e4a29-6d9d-83b1-80e5-814b977c02e6" class="">스프린트의 최종 목표</h2></div><div style="display:contents" dir="auto"><p id="d68e4a29-6d9d-822d-be05-81e1c55b1e0d" class="">🧑‍🤝‍🧑 좋은 동료를 얻어가며 함께 성장하기</p></div><div style="display:contents" dir="auto"><p id="b76e4a29-6d9d-8260-a613-01f21009418b" class="">🏆 최선의 팀 프로젝트 결과물 완성하기</p></div><div style="display:contents" dir="auto"><p id="f49e4a29-6d9d-82e3-9adc-81633e8e0350" class="">🧑🏻‍💻 협업을 잘 하는 엔지니어로 성장하기</p></div><div style="display:contents" dir="auto"><p id="7bee4a29-6d9d-83c9-ad69-81b99207414d" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="88ae4a29-6d9d-8231-955d-01939487a8a7" class="">일정</h2></div><div style="display:contents" dir="auto"><ul id="68be4a29-6d9d-835e-a684-81e54bc02425" class="bulleted-list"><li style="list-style-type:disc"><strong>프로젝트 OT</strong> : 프로젝트 기간 시작일</li></ul></div><div style="display:contents" dir="auto"><ul id="309e4a29-6d9d-83b2-888f-0128db7e8274" class="bulleted-list"><li style="list-style-type:disc"><strong>프로젝트 본 기간</strong> : OT 직후 ~ 프로젝트 기간 종료일 D-1</li></ul></div><div style="display:contents" dir="auto"><ul id="2c1e4a29-6d9d-823b-9dfe-81576aae706b" class="bulleted-list"><li style="list-style-type:disc"><strong>프로젝트 발표</strong> : 프로젝트 기간 마감일</li></ul></div><div style="display:contents" dir="auto"><p id="af4e4a29-6d9d-82c2-8f71-81f037842305" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="b76e4a29-6d9d-832c-bdc1-015aead10fe2" class="">프로젝트 개요</h2></div><div style="display:contents" dir="auto"><p id="78be4a29-6d9d-834f-8bf2-81088478f2b0" class="">마지막 <strong>모델 배포하기 프로젝트</strong>에 오신 여러분들을 진심으로 축하드립니다. 이미 여러분들은 AI 엔지니어 취업에 필요한 대부분의 기술을 습득하셨어요. </p></div><div style="display:contents" dir="auto"><p id="af3e4a29-6d9d-824e-8b46-8139b29e99b9" class="">혁신은 뛰어난 기술력과 번뜩이는 창의력으로부터 나온다고 합니다. 지금까지 학습하신 내용을 바탕으로, 지금까지와의 프로젝트와는 다르게 조금 더 <strong>창의적인 프로젝트</strong>를 진행해봅시다.</p></div><div style="display:contents" dir="auto"><ul id="c18e4a29-6d9d-83d0-8003-812f26b133ad" class="bulleted-list"><li style="list-style-type:disc">이번 프로젝트의 목표는 <strong>생성형 AI 기술을 활용하여 소상공인이 광고 콘텐츠를 손쉽게 제작할 수 있도록 서비스를 개발</strong>하는 것이 목표입니다.<div style="display:contents" dir="auto"><ul id="624e4a29-6d9d-834e-baa9-017e2ffb2836" class="bulleted-list"><li style="list-style-type:circle">디자인 역량이나 전문 도구 없이도 제품 이미지, 배너, 상세 페이지용 시각 자료, 메뉴판 이미지, 광고 문구 같은 콘텐츠를 자동으로 생성할 수 있도록 하여, 오프라인 중심의 사업자들이 온라인 마케팅에 쉽게 진입할 수 있도록 하는 것이, 서비스의 목표입니다.</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="22fe4a29-6d9d-83aa-bdca-810908fc01df" class="bulleted-list"><li style="list-style-type:disc">‘소상공인을 위한 광고컨텐츠 생성 서비스’ 라는 대주제 안에서 어떤 내용으로 세부적으로 구현할 것인지는 팀 안에서 자율적으로 결정해주세요.<div style="display:contents" dir="auto"><ul id="feae4a29-6d9d-82e6-bf8a-8185b5035321" class="bulleted-list"><li style="list-style-type:circle">고정/자율 여부가 ‘고정’으로 된 항목들은 ‘가이드라인’에 적힌 내용을 반드시 따라주셔야 합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="fc4e4a29-6d9d-8202-be41-8134ee171e62" class="bulleted-list"><li style="list-style-type:circle">고정/자율 여부가 ‘자율’로 된 항목들은 ‘가이드라인’에 적힌 내용을 참고해주시거나, 완전히 자유롭게 하셔도 무방합니다.</li></ul></div><div style="display:contents" dir="ltr"><table id="898e4a29-6d9d-82bf-9ecf-01d3d997574b" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="f03e4a29-6d9d-8321-9ac6-01edbe5d6111"><th id="GKYA" class="simple-table-header-color simple-table-header">항목</th><th id="}tj:" class="simple-table-header-color simple-table-header">고정/자율 여부</th><th id="dqVV" class="simple-table-header-color simple-table-header" style="width:419px">가이드라인</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="f20e4a29-6d9d-83c3-8e23-81f714030258"><td id="GKYA" class="">서비스 이용 주체<br/>(유저)</td><td id="}tj:" class=""><mark class="highlight-red_background"><strong>고정</strong></mark></td><td id="dqVV" class="" style="width:419px"><strong>소상공인</strong>(직원 수가 적고, 영세한 자본으로 오프라인 또는 온라인을 통해 제품 또는 서비스를 판매하는 개인사업자 또는 법인사업자를 의미하며, 광고 및 콘텐츠 제작에 인력·예산상의 어려움을 겪는 사업자)</td></tr></div><div style="display:contents" dir="ltr"><tr id="45ae4a29-6d9d-83aa-be5a-0111b3ba37a3"><td id="GKYA" class="">서비스 제공 주체</td><td id="}tj:" class=""><mark class="highlight-teal_background">자율</mark></td><td id="dqVV" class="" style="width:419px">영리적 목적의 기업, 또는 비영리적 목적의 단체 (정부, 사회적 기업 등)</td></tr></div><div style="display:contents" dir="ltr"><tr id="65ce4a29-6d9d-826c-80ad-010b9bfe8d85"><td id="GKYA" class="">서비스 목적</td><td id="}tj:" class=""><mark class="highlight-red_background"><strong>고정</strong></mark></td><td id="dqVV" class="" style="width:419px">생성형 AI 기술을 활용한 소상공인이 <strong>광고 콘텐츠를 손쉽게 제작</strong>할 수 있는 서비스</td></tr></div><div style="display:contents" dir="ltr"><tr id="982e4a29-6d9d-8291-9ddf-01e03a99e978"><td id="GKYA" class="">서비스 기능</td><td id="}tj:" class=""><mark class="highlight-teal_background">자율</mark></td><td id="dqVV" class="" style="width:419px">하단의 ‘구현 기능 예시’ 참고<br/><mark class="highlight-pink_background">(단, 최소 한 가지 기능 이상은 구현이 되어야 제출 인정. 예시 이외의 기능을 구현할 경우 예시에 준하는 기능 구현 필요)</mark></td></tr></div><div style="display:contents" dir="ltr"><tr id="668e4a29-6d9d-8257-9c27-011d2b860ff1"><td id="GKYA" class="">서비스 산출물</td><td id="}tj:" class=""><mark class="highlight-teal_background">자율</mark></td><td id="dqVV" class="" style="width:419px">제품 이미지, 배너, 상세 페이지용 시각 자료, 메뉴판 이미지, 광고 문구, 또는 이에 준하는 광고 콘텐츠</td></tr></div></tbody></table></div></li></ul></div><div style="display:contents" dir="auto"><ul id="93fe4a29-6d9d-82ca-b0cc-81fe48a0015d" class="bulleted-list"><li style="list-style-type:disc">프로젝트의 <strong>핵심은 ‘생성형 AI 활용’지만, 메인 결과물은 ‘서비스’를 만드는 것</strong>임을 잊지 말아주세요. 서비스 전체의 완성도를 신경 써주세요.</li></ul></div><div style="display:contents" dir="auto"><h2 id="145e4a29-6d9d-82f9-8ebe-814539e82d15" class="">프로젝트 가이드</h2></div><div style="display:contents" dir="auto"><p id="c65e4a29-6d9d-83b0-8e8e-017cddeae191" class="">프로젝트는 아래 가이드라인에 맞추어 진행해 주세요.</p></div><div style="display:contents" dir="auto"><p id="9f4e4a29-6d9d-8364-87c2-01451217c967" class=""><strong>심화 과제는 선택 사항으로, 필요한 경우 팀원들의 합의 하에 작업을 수행해 보세요.</strong></p></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">요구사항 분석 및 팀 별 역할 분배</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="fe8e4a29-6d9d-82d5-ba3e-8145117f6108" class="bulleted-list"><li style="list-style-type:disc">프로젝트 가이드를 전반적으로 팀원들과 같이 읽어보며 어떤 작업을 수행해야하는지 파악해보세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="76be4a29-6d9d-826c-a52b-01f6bdc461b3" class="bulleted-list"><li style="list-style-type:disc">좀 더 체계적인 협업을 위해, 아래와 같이 역할군을 나눌 것을 권장드려요.<div style="display:contents" dir="auto"><ul id="f22e4a29-6d9d-82d4-9a83-81528e6d1143" class="bulleted-list"><li style="list-style-type:circle">반드시 아래 가이드라인을 따를 필요는 없어요. 팀 상황과 개인의 관심사에 맞게 역할을 자유롭게 부여하여 프로젝트를 진행해보세요.</li></ul></div><div style="display:contents" dir="ltr"><table id="03ce4a29-6d9d-832d-9f8f-819d36ce5e2b" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="5fae4a29-6d9d-83c2-92ec-01ac220f22c0"><th id="rs:s" class="simple-table-header-color simple-table-header">역할명</th><th id="BcGC" class="simple-table-header-color simple-table-header" style="width:489px">상세</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="1ebe4a29-6d9d-8216-b1da-81a8f710999a"><td id="rs:s" class="">Project Manager</td><td id="BcGC" class="" style="width:489px">- 프로젝트의 협업 과정을 매니징하는 역할<br/>- 애자일/스프린트 방식으로 단위를 분리하고 회의를 주도<br/>- 서비스 기획<br/>- 서비스 테스트 및 평가</td></tr></div><div style="display:contents" dir="ltr"><tr id="bc8e4a29-6d9d-8276-a4c2-81c2238b1c49"><td id="rs:s" class="">모델 개발 담당</td><td id="BcGC" class="" style="width:489px">- 생성 모델 선정<br/>- 모델 운영 파이프라인 구현<br/>- (필요 시)데이터 수집하여 모델 파인튜닝<br/>- 모델 성능 평가</td></tr></div><div style="display:contents" dir="ltr"><tr id="8d1e4a29-6d9d-835c-ae36-8174f49d1944"><td id="rs:s" class="">모델 서빙 담당 </td><td id="BcGC" class="" style="width:489px">- 모델 서빙 전략 수립 및 구현<br/>- 추론 시 속도 및 메모리 최적화</td></tr></div><div style="display:contents" dir="ltr"><tr id="cc9e4a29-6d9d-828a-8249-81272746a136"><td id="rs:s" class="">서비스 개발 담당</td><td id="BcGC" class="" style="width:489px">- 서비스 요구사항에 기반해 화면 구현<br/>- 서비스 요구사항에 맞춰 서버 환경을 구성하고 백엔드 로직 개발</td></tr></div></tbody></table></div></li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">협업 타임라인 설정 및 업무 분배 </summary><div class="indented"><div style="display:contents" dir="auto"><ul id="79de4a29-6d9d-837a-a80f-81bf9a47bc74" class="bulleted-list"><li style="list-style-type:disc">팀장님(또는 Project Manager)의 주도 하에 프로젝트 목표를 달성하기 위한 세부 계획을 업무 단위로 작성하고 적절하게 분배해보세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="afee4a29-6d9d-83c5-a319-019bf65a3521" class="bulleted-list"><li style="list-style-type:disc">누가 어떤 업무를 언제까지 해올지 위주로 작성하시고, 꾸준하게 트래킹하면서 프로젝트 진행상황을 체크해보세요.</li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">협업 일지 작성</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="a03e4a29-6d9d-83a9-ab8c-01db10f8a3a2" class="bulleted-list"><li style="list-style-type:disc">팀장님(또는 Project Manager)과 모든 팀원분들은 각자 편한 방식(Notion, 구글 문서, 워드, 기타 마크다운 툴)으로 개인단위의 <strong>협업일지를 작성</strong>해주세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="aa9e4a29-6d9d-8242-aacf-81f296f32356" class="bulleted-list"><li style="list-style-type:disc"><strong>매일매일 프로젝트 시작하기 전</strong> 오늘 무엇을 해야하는지, 무엇을 했고 하지 못했는지, 하루를 마무리하며 협업에 대한 소감은 어땠는지에 대해 상세하게 작성해주세요. </li></ul></div><div style="display:contents" dir="auto"><ul id="fe2e4a29-6d9d-8269-bfd2-8146fcdef051" class="bulleted-list"><li style="list-style-type:disc">어떤 코드를 작성했고 어떤 인사이트를 얻었고 어떤 고민을 했고 어떤 실수를 했는지까지, 최대한 구체적으로 작성할 수록 좋습니다. 무엇보다 중요한건 <strong>오늘 팀을 위해 내가 어떤 기여를 했는지 작성</strong>하는 거예요.</li></ul></div><div style="display:contents" dir="auto"><ul id="a85e4a29-6d9d-836b-943d-01f147979b59" class="bulleted-list"><li style="list-style-type:disc">내가 제시한 의견과 아이디어, 결과물이 팀 전체의 방향에 반영되지 않아도 괜찮아요. 일단 적어봅시다.</li></ul></div><div style="display:contents" dir="auto"><ul id="8b3e4a29-6d9d-83b3-9efa-81f357daf7e5" class="bulleted-list"><li style="list-style-type:disc">완벽한 정리보다는 최대한 오늘의 기록을 많이 남기려고 노력해보세요. (협업 일지가 얼마나 잘 정돈되어있느냐는 평가하지 않습니다.)</li></ul></div><div style="display:contents" dir="auto"><ul id="972e4a29-6d9d-8213-a8b4-01592139c15b" class="bulleted-list"><li style="list-style-type:disc"><em>스프린터분들의 개인 포트폴리오 구성을 돕고자 협업일지 작성을 평가 항목으로 포함하고 있습니다. </em><em><span style="border-bottom:0.05em solid">포트폴리오 핵심인 프로젝트 파트를 스프린트가 끝난 뒤 작성하는 것은 절대 권장드리지 않습니다.</span></em><em> 프로젝트를 할 당시의 감정과 생각을 최대한 녹여내어 매일의 일지를 작성하고, 여유가 될 때 정리합시다. </em></li></ul></div><div style="display:contents" dir="auto"><ul id="af7e4a29-6d9d-8251-8d5e-014015b47e5f" class="bulleted-list"><li style="list-style-type:disc">협업 일지 예시는 본 문서 최하단 토글을 참조해주세요. 필수적으로 들어가야하는 항목을 확인해주세요.</li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">프로젝트 셋업</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="42ce4a29-6d9d-83ad-9c43-814a314b3be1" class="bulleted-list"><li style="list-style-type:disc">제공받은 GCP VM 내에서 Python 프로젝트 용 주요 패키지들을 설치하고, SSH 설정을 통해 협업 환경 세팅을 완료합시다.</li></ul></div><div style="display:contents" dir="auto"><ul id="ce7e4a29-6d9d-82b5-b33e-81533c8e86a5" class="bulleted-list"><li style="list-style-type:disc">Github을 이용하여 프로젝트 리포지토리를 생성하고, 팀원을 초대합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="400e4a29-6d9d-826b-adfa-0150720b3b6b" class="bulleted-list"><li style="list-style-type:disc">프로젝트 디렉토리 구조를 설정합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="374e4a29-6d9d-824b-a058-018dcb66537e" class="bulleted-list"><li style="list-style-type:disc">진행하면서 어려움을 겪는 팀은 주강사 및 멘토님에게 조언을 적극적으로 요청해 보세요. 주강사님은 여러분들이 프로젝트를 하시는 동안 강의실에 대기하실 거예요. 좋은 질문으로 좋은 프로젝트를 완성해갑시다.</li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">실습 환경 및 기술 스택 안내</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="be4e4a29-6d9d-83d5-b2a4-81c2ace08387" class="bulleted-list"><li style="list-style-type:disc">중급 프로젝트와 동일한 스펙의 GCP 서버를 제공해드립니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="2a5e4a29-6d9d-83a0-bf38-81951fab3340" class="bulleted-list"><li style="list-style-type:disc">사용하실 기술 스택은 자유롭게 선택하시면 되겠습니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="ad2e4a29-6d9d-83e5-980c-017845ac0e8b" class="bulleted-list"><li style="list-style-type:disc">이미지 생성에 HuggingFace를 활용할 수 있습니다. HuggingFace 사용법은 알고 계실 테니, 이미지 생성 관련해서 아주 간단하게 가이드를 전달드립니다.</li></ul></div><div style="display:contents" dir="ltr"><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="554e4a29-6d9d-8372-8b72-017d76d2cdc5"><div style="font-size:1.5em"><span class="icon">💡</span></div><div style="width:100%"><div style="display:contents" dir="auto"><ul id="f4ae4a29-6d9d-82b3-adf3-018f2562723a" class="bulleted-list"><li style="list-style-type:disc">HuggingFace에 존재하는 다양한 이미지 생성 모델을 탐색해 보고 적절한 것을 선정해 주세요. 이미지 생성 퀄리티와 메모리 사용량 등을 종합적으로 고려하시기 바랍니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="dd6e4a29-6d9d-8314-9f4f-8118cde0cc75" class="bulleted-list"><li style="list-style-type:disc">다만 기본 모델을 그대로 사용해서는 원하는 결과물을 얻기 어려울 수 있습니다. LoRA, DreamBooth, IP-Adapter, ControlNet 등의 키워드를 살펴보시고, 서비스 기획에 따라 적절한 기술을 활용해 보세요.</li></ul></div></div></figure></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">구현 기능 예시</summary><div class="indented"><div style="display:contents" dir="ltr"><table id="2a9e4a29-6d9d-8284-a31f-018e9adabb0e" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="513e4a29-6d9d-8307-81dd-0116d36a2b85"><th id="z@r`" class="simple-table-header-color simple-table-header" style="width:202.2161407470703px">기능</th><th id="o{~&gt;" class="simple-table-header-color simple-table-header">입력</th><th id="hN?_" class="simple-table-header-color simple-table-header">출력</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="941e4a29-6d9d-828c-8fae-01bb637b06ed"><td id="z@r`" class="" style="width:202.2161407470703px">상품 이미지에 어울리는 <br/>광고 문구 제안</td><td id="o{~&gt;" class="">- 상품 이미지<br/>- 문구에 대한 요청 사항(스타일, 톤 등)</td><td id="hN?_" class="">광고 문구</td></tr></div><div style="display:contents" dir="ltr"><tr id="332e4a29-6d9d-8291-bb0a-81d36f63e94b"><td id="z@r`" class="" style="width:202.2161407470703px">광고 이미지 만들기 1: <br/>텍스트 입력만</td><td id="o{~&gt;" class="">- 광고 문구<br/>- 또는 이미지에 대한 요청 사항</td><td id="hN?_" class="">광고 문구 또는 요청 사항에 맞춰 제작된 이미지</td></tr></div><div style="display:contents" dir="ltr"><tr id="e3fe4a29-6d9d-8214-92df-81059e9c84f3"><td id="z@r`" class="" style="width:202.2161407470703px">광고 이미지 만들기 2: <br/>입력 이미지를 레퍼런스로 사용</td><td id="o{~&gt;" class="">- 레퍼런스용 이미지<br/>- 이미지에 대한 요청 사항<br/>- 또는 스타일 템플릿</td><td id="hN?_" class="">레퍼런스 이미지와 요청 사항에 맞춰 제작된 이미지</td></tr></div><div style="display:contents" dir="ltr"><tr id="83ce4a29-6d9d-822d-8ca8-81981ea0e388"><td id="z@r`" class="" style="width:202.2161407470703px">광고 이미지 만들기 3: <br/>입력 이미지를 보존</td><td id="o{~&gt;" class="">- 제품 사진<br/>- 이미지에 대한 요청 사항<br/>- 또는 스타일 템플릿</td><td id="hN?_" class="">제품 사진 이미지가 보존된 상태에서 요청 사항에 맞춰 제작된 광고 이미지</td></tr></div><div style="display:contents" dir="ltr"><tr id="30ee4a29-6d9d-83c1-872f-816978468ea7"><td id="z@r`" class="" style="width:202.2161407470703px">광고 이미지 만들기 4: <br/>스케치를 그려서 이미지 만들기</td><td id="o{~&gt;" class="">- 스케치 이미지<br/>- 이미지에 대한 요청 사항<br/>- 또는 스타일 템플릿</td><td id="hN?_" class="">스케치 및 요청 사항에 맞춰 제작된 광고 이미지</td></tr></div><div style="display:contents" dir="ltr"><tr id="f0ae4a29-6d9d-8285-8157-810832f01f1d"><td id="z@r`" class="" style="width:202.2161407470703px">또는, 위에 준하는 수준의 기능을 <br/>자유롭게 선정</td><td id="o{~&gt;" class="">자율</td><td id="hN?_" class="">자율</td></tr></div></tbody></table></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">모델 성능 및 서비스 사용성 평가</summary><div class="indented"><div style="display:contents" dir="auto"><p id="5c2e4a29-6d9d-820b-b756-01dcb2d18c3f" class="">프로젝트 결과물의 평가를 위해 다음과 같은 기준으로 평가해보세요.</p></div><div style="display:contents" dir="auto"><p id="e8ce4a29-6d9d-83cc-b155-0180b3ecc7f3" class="">(강사님께서 평가하시는 평가 항목과는 달라요. 프로젝트 고도화를 위한 평가도구로 활용해보세요.)</p></div><div style="display:contents" dir="ltr"><table id="9d6e4a29-6d9d-832a-918c-017b6cf785ac" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="200e4a29-6d9d-8208-8319-811dccb9b536"><th id="?QA[" class="simple-table-header-color simple-table-header" style="width:142.9934844970703px">항목</th><th id="A{ov" class="simple-table-header-color simple-table-header" style="width:510.9947814941406px">질문가이드</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3d8e4a29-6d9d-8347-b486-0111f0343398"><td id="?QA[" class="" style="width:142.9934844970703px">정확도와 적합도</td><td id="A{ov" class="" style="width:510.9947814941406px">생성된 이미지/문구가 프롬프트(스타일, 톤, 사용 목적 등)을 얼마나 잘 반영하나요?</td></tr></div><div style="display:contents" dir="ltr"><tr id="c49e4a29-6d9d-831a-af14-81a23f560222"><td id="?QA[" class="" style="width:142.9934844970703px"><strong>일관성과 안정성</strong></td><td id="A{ov" class="" style="width:510.9947814941406px">같은 조건과 입력에 대해 생성된 콘텐츠들이 주제, 스타일, 톤에서 일관성을 유지하나요?</td></tr></div><div style="display:contents" dir="ltr"><tr id="4a0e4a29-6d9d-8378-9ffa-814ee1d2f632"><td id="?QA[" class="" style="width:142.9934844970703px">응답 속도와 부하 처리</td><td id="A{ov" class="" style="width:510.9947814941406px">콘텐츠 생성에 걸리는 시간이 실제 서비스로서 만족스러운가요?</td></tr></div><div style="display:contents" dir="ltr"><tr id="d5ce4a29-6d9d-82f9-bafb-8190bc5268cf"><td id="?QA[" class="" style="width:142.9934844970703px">유저 중심 인터페이스</td><td id="A{ov" class="" style="width:510.9947814941406px">유저가 자연스럽게 콘텐츠를 생성할 수 있도록 입력/결과 흐름이 설계되었나요?</td></tr></div><div style="display:contents" dir="ltr"><tr id="fc4e4a29-6d9d-8256-870e-01a29264da3c"><td id="?QA[" class="" style="width:142.9934844970703px">서비스 완성도</td><td id="A{ov" class="" style="width:510.9947814941406px">전체 생성 흐름이 자연스럽고, 실제 활용 가능한 수준인가요?</td></tr></div><div style="display:contents" dir="ltr"><tr id="d65e4a29-6d9d-83dc-aa63-019aa35ae25e"><td id="?QA[" class="" style="width:142.9934844970703px">제어 가능성</td><td id="A{ov" class="" style="width:510.9947814941406px">사용자가 입력이나 옵션을 조정함으로써 원하는 방향으로 결과를 유도할 수 있나요?</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><ul id="efae4a29-6d9d-83c5-bac8-817827c4dcfe" class="toggle"><li><details open=""><summary>서비스 완성도에 대한 가이드</summary><div style="display:contents" dir="auto"><ul id="c89e4a29-6d9d-8237-9029-0118a416c1d3" class="bulleted-list"><li style="list-style-type:disc">Streamlit을 사용하더라도 그 한계 내에서 최대한 사용하기 편한 UI/UX를 설계해야 합니다. 사용자 입장에서 불편하거나 비직관적인 부분은 없는지 계속 고민하고 개선해보세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="c97e4a29-6d9d-8262-b9b2-01b64ea3ed18" class="bulleted-list"><li style="list-style-type:disc">다양한 사용 시나리오와 엣지 케이스를 미리 구상해 보고, 실제 사용자가 겪을 수 있는 문제들을 테스트를 통해 꾸준히 점검해야 합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="7d1e4a29-6d9d-8376-bf51-010f36950cec" class="bulleted-list"><li style="list-style-type:disc">모델 응답 속도, 이미지 데이터 전달 방식 등을 최적화해 보세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="7b5e4a29-6d9d-8257-b41f-812eb404a7b9" class="bulleted-list"><li style="list-style-type:disc">어디서 문제가 발생하는지 관찰할 수 있도록 로깅과 모니터링을 수행합니다.</li></ul></div></details></li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">결론 도출 및 분석 보고서 작성, 시연 영상 촬영</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="f39e4a29-6d9d-8308-aa84-817d8062a387" class="bulleted-list"><li style="list-style-type:disc">프로젝트 진행 과정, 결과, 성과 및 개선 사항, 주요 의사결정 내용들이 잘 드러나도록 정돈된 형태의 보고서를 작성해봅시다.</li></ul></div><div style="display:contents" dir="auto"><ul id="8b6e4a29-6d9d-82f7-bf0e-81e3b70e45f6" class="bulleted-list"><li style="list-style-type:disc">보고서의 포맷은 자유롭게 하셔도 좋습니다. 발표자료를 보고서로 제출하셔도 괜찮아요. </li></ul></div><div style="display:contents" dir="auto"><ul id="b3ce4a29-6d9d-83b8-84a4-814badca5c8b" class="bulleted-list"><li style="list-style-type:disc"><strong>시연 영상은 필수가 아니에요.</strong> 제출물에 포함되지 않습니다.<div style="display:contents" dir="auto"><ul id="2d5e4a29-6d9d-8350-9418-01e2acbd1b9b" class="bulleted-list"><li style="list-style-type:circle">다만, 프로젝트 마무리 시 시연 영상을 한번 찍어두면 포트폴리오 작성 시 매우 유리해서 추천드려요.</li></ul></div></li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">결과 제출 및 공유(발표 세션)</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="7b4e4a29-6d9d-8347-88a6-819397ebf1a9" class="bulleted-list"><li style="list-style-type:disc">작성한 보고서를 토대로 프로젝트 과정 및 결과를 공유하는 팀 별 전체 발표 세션을 진행해요.</li></ul></div><div style="display:contents" dir="auto"><ul id="26de4a29-6d9d-82ac-b887-815cf01bab4b" class="bulleted-list"><li style="list-style-type:disc">발표는 팀 당 25분으로 진행합니다. (발표 20분, 질의응답 5분) 발표 시간을 초과했다고 해서 평가에 불이익은 없으나, 원활한 세션 진행을 위해 되도록이면 가이드를 지켜주세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="fbde4a29-6d9d-8200-b5db-8106e347d242" class="bulleted-list"><li style="list-style-type:disc">발표는 모든 팀원이 참여해주세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="845e4a29-6d9d-83bc-b0ae-81770ffe41e7" class="bulleted-list"><li style="list-style-type:disc">발표 순서는 1팀부터 마지막 팀 순으로 진행합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="af1e4a29-6d9d-832b-a282-816984a088ee" class="bulleted-list"><li style="list-style-type:disc">상대 팀의 발표를 들으면서 궁금한 점이 있다면 Zep 강의실의 채팅 기능을 활용하여 질문해주세요. 칭찬과 격려의 코멘트도 좋습니다!</li></ul></div></div></details></div><div style="display:contents" dir="auto"><details open=""><summary style="font-weight:600;font-size:1.25em;line-height:1.3;margin:0">발표 후 멘토링</summary><div class="indented"><div style="display:contents" dir="auto"><ul id="e9ee4a29-6d9d-8358-8356-0197bb77d2a0" class="bulleted-list"><li style="list-style-type:disc">발표세션 이후 진행되는 멘토링은 결과물에 대한 회고 멘토링으로 진행됩니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="4d2e4a29-6d9d-8237-b21f-811c168294fb" class="bulleted-list"><li style="list-style-type:disc">어떤 부분이 어려웠고 준비를 잘 했는지에 대해 서로 피드백을 해보고, 다음 프로젝트에서는 어떻게 접근하면 좋을지에 대해서 의견을 나눠보세요.</li></ul></div><div style="display:contents" dir="auto"><ul id="6b0e4a29-6d9d-82db-afd4-010e3189c2f6" class="bulleted-list"><li style="list-style-type:disc">필요 시, 리팩토링을 진행합니다.<div style="display:contents" dir="auto"><ul id="55be4a29-6d9d-83b9-b66e-017ad697b8c5" class="bulleted-list"><li style="list-style-type:circle">발표 세션과 멘토링에서 파악한 피드백을 정리하고 개선사항을 정리합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="ae7e4a29-6d9d-83b8-8d52-01b49f6467c7" class="bulleted-list"><li style="list-style-type:circle">개선사항 목록을 토대로 리팩토링 계획을 수립하고 작업을 분담합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="af7e4a29-6d9d-839f-bb2c-010cda5bc433" class="bulleted-list"><li style="list-style-type:circle">리팩토링 결과 및 개선사항을 별도로 정리합니다.</li></ul></div></li></ul></div></div></details></div><div style="display:contents" dir="auto"><p id="415e4a29-6d9d-8286-92df-01a3810b5845" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="151e4a29-6d9d-83c0-ba0d-01798f8a77d6" class="">GCP(Google Cloud Platform) 사용 가이드</h2></div><div style="display:contents" dir="auto"><p id="ba0e4a29-6d9d-831f-8f41-81d511fd05ad" class="">이번 프로젝트 수행을 위해 GCP 서버에서 VM과 L4 GPU를 제공해드립니다.</p></div><div style="display:contents" dir="ltr"><table id="a47e4a29-6d9d-8321-99d8-01c5eea7c97d" class="simple-table"><tbody><div style="display:contents" dir="ltr"><tr id="706e4a29-6d9d-8327-a575-01c4e04ec365"><th id="fTVY" class="simple-table-header-color simple-table-header">GCP 계정</th><td id="&lt;pIY" class="" style="width:549px">- GCP를 이용하기 위한 전용 구글계정을 발급하여 부여해드릴 예정입니다.<br/>- GCP 계정 아이디는 LMS 계정과 동일하나, 도메인이 codeit-sprint.kr로 다릅니다.<br/>    - ex) 코드잇 LMS 계정이 <a href="mailto:spai0001@codeit.com">spai0001@codeit.com</a> 이라면, GCP 계정은 <a href="mailto:spai0001@codeit-sprint.kr">spai0001@codeit-sprint.kr</a><br/>- GCP 계정 비밀번호는 코드잇 LMS 최초 비밀번호와 동일하며, 최초 로그인 시 비밀번호를 반드시 변경하셔야 합니다.</td></tr></div><div style="display:contents" dir="ltr"><tr id="f6ae4a29-6d9d-82e2-b333-0159b3d9406f"><th id="fTVY" class="simple-table-header-color simple-table-header">GCP 2단계 인증</th><td id="&lt;pIY" class="" style="width:549px">- 계정 보안을 위해 <mark class="highlight-red"><strong><span style="border-bottom:0.05em solid">2단계 인증을 반드시 설정</span></strong></mark>하셔야하며, 바로 설정하지 않으시면 일정 기간 후 접속이 차단되실 수 있습니다.<br/>- 구글 OTP를 통한 2단계 인증을 진행하시기를 권장드립니다.</td></tr></div><div style="display:contents" dir="ltr"><tr id="5ade4a29-6d9d-837e-a24b-019a912908ef"><th id="fTVY" class="simple-table-header-color simple-table-header">GCP 프로젝트</th><td id="&lt;pIY" class="" style="width:549px">- 각 팀 별로 협업하실 수 있는 공간인 프로젝트를 만들어두었습니다.<br/>- 구글 로그인 &gt; GCP 접속 &gt; 콘솔로 이동 &gt; 프로젝트 선택 &gt; 조직 선택 ‘codeit-sprint.kr’에서 토글을 펼치면 자동적으로 프로젝트가 보여야하는 것이 정상입니다.<br/>- 보이지 않으면, 디스코드 공지의 팀 별 프로젝트 링크를 통해 이동해주세요.</td></tr></div><div style="display:contents" dir="ltr"><tr id="07be4a29-6d9d-83ca-b14d-814ed1d1d40e"><th id="fTVY" class="simple-table-header-color simple-table-header">제공 VM 사양</th><td id="&lt;pIY" class="" style="width:549px">- region<br/>  - us-central1 : 기본적으로 이 region으로 세팅하시면 됩니다.<br/>  <mark class="highlight-red">- us-east1 : 단, sprint-ai-chunk4-0*와 같이 chunk4에 배정을 받으셨다면 해당 region으로 세팅해주셔야합니다.</mark><br/>- CPU : g2-standard (vCpu : 4, Memory : 16GB) x 1<br/>- GPU : L4 x 1<br/>- <strong>프로젝트 종료 시점까지 해당 사양의 VM + GPU를 24시간 무제한 사용하실 수 있습니다.</strong><br/>- VM 생성 시 디스크 크기는 100GB 이하로 제한해주세요.<br/>- VM 생성 시 이미지는 자유롭게 선택하되, Cuda가 설치된 이미지를 선택하시기를 권장 드려요. (ex. ubuntu-accelerator-2204-amd64-with-nvidia-550)</td></tr></div><div style="display:contents" dir="ltr"><tr id="52de4a29-6d9d-8388-8d22-01cb434119cb"><th id="fTVY" class="simple-table-header-color simple-table-header"><mark class="highlight-red"><strong>주의사항</strong></mark></th><td id="&lt;pIY" class="" style="width:549px">- 프로젝트 당 VM은 최대 한개로 유지해주세요. (추가적인 VM 생성은 별도 과금이 발생합니다.)<br/>- 온프레미스 서버 이용 시 보안 위험을 항상 고려해주세요. 각종 API의 key, SSH key가 Github에 올라가지 않도록 보안에 주의해주세요.<br/>- 대용량 데이터의 송.수신이 필요한 외부 Api나 도구를 직접 VM에 설치하시는 경우 네트워크 비용이 과도하게 발생할 수 있으니 본 가이드 외에 명시된 기술스택을 사용하시는 경우 반드시 주강사님 또는 운영진과의 확인을 부탁드립니다.<br/>- 위에 명시된 내용을 포함하여 이용자의 보안 상 부주의로 비용이 과다청구될 경우 자비 부담 요청을 드릴 수 있습니다. </td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="f2fe4a29-6d9d-83c2-8326-81034719ff18" class="">OpenAI Api 사용 가이드</h3></div><div style="display:contents" dir="auto"><p id="209e4a29-6d9d-820e-9259-81ab6c5153ed" class="">이번 프로젝트에서도 GCP 뿐만 아니라 OpenAI Api를 제공합니다.</p></div><div style="display:contents" dir="auto"><ul id="6ebe4a29-6d9d-82e2-837b-81f0113a2309" class="bulleted-list"><li style="list-style-type:disc">범용적 도구로써는 gpt-5-mini, gpt-5-nano 모델 사용이 가능합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="980e4a29-6d9d-82c5-8513-01bcfa837d0e" class="bulleted-list"><li style="list-style-type:disc">이미지 생성 모델은 최대한 Hugging Face 사용을 추천드리지만, 제한적으로 GPT-image-1-mini 사용도 가능합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="d29e4a29-6d9d-8242-b8eb-8104f216d0f0" class="bulleted-list"><li style="list-style-type:disc">텍스트 임베딩 모델은 text-embedding-3-small 모델 사용이 가능합니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="91de4a29-6d9d-820a-8bcf-01484cd7c901" class="bulleted-list"><li style="list-style-type:disc">Api Key는 디스코드 공지를 참고해주세요.</li></ul></div><div style="display:contents" dir="auto"><p id="977e4a29-6d9d-82f7-ae0f-81c5733b66b5" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="29ce4a29-6d9d-832b-bdc4-81b582e81c65" class="">평가 방식</h2></div><div style="display:contents" dir="auto"><p id="d2ae4a29-6d9d-83f8-96fd-817c36bcf586" class="">평가 방식은 크게 <code>과정 중 평가</code>와 <code>결과 평가</code>로 나뉩니다.</p></div><div style="display:contents" dir="auto"><p id="25ae4a29-6d9d-83e4-87f4-0128d56fe893" class=""><code>결과 평가</code>의 경우 <mark class="highlight-blue"><code>팀 단위 평가</code></mark>와 <mark class="highlight-blue"><code>개인 단위 평가</code></mark>로 나누어 시행합니다.</p></div><div style="display:contents" dir="auto"><p id="08de4a29-6d9d-826a-a4d0-818151c98c6a" class="">
+</p></div><div style="display:contents" dir="auto"><ul id="0dce4a29-6d9d-82ac-b939-81f076071f9f" class="toggle"><li><details open=""><summary><strong>과정 중 평가</strong></summary><div style="display:contents" dir="auto"><ul id="eefe4a29-6d9d-83d7-82bb-81fda54639c5" class="bulleted-list"><li style="list-style-type:disc">평가자 : 각 팀의 멘토님들</li></ul></div><div style="display:contents" dir="auto"><ul id="ea4e4a29-6d9d-8372-9d33-0135c9ca1dcc" class="bulleted-list"><li style="list-style-type:disc">평가단위 : 개인 단위 평가</li></ul></div><div style="display:contents" dir="auto"><ul id="c81e4a29-6d9d-821c-87c0-810227f6f618" class="bulleted-list"><li style="list-style-type:disc">평가항목 : 적극성, 문제 해결 능력, 의사소통 능력, 성장 가능성 (각 25점, 총 100점)</li></ul></div><div style="display:contents" dir="auto"><ul id="76fe4a29-6d9d-8219-969c-014a6c9f4330" class="bulleted-list"><li style="list-style-type:disc">평가시점 : 프로젝트 종료 후 돌아오는 일요일 23:59분까지</li></ul></div><div style="display:contents" dir="auto"><ul id="5e8e4a29-6d9d-826a-afac-01b62a8d8cf0" class="bulleted-list"><li style="list-style-type:disc"><strong>프로젝트 기간 중 멘토링 시간 및 디스코드 채널 내 팀원 간 소통하시는 모습 등 다양한 경로</strong>를 통해 멘토님들께서 스프린터 분들의 소프트 스킬을 평가합니다.</li></ul></div></details></li></ul></div><div style="display:contents" dir="auto"><ul id="2fee4a29-6d9d-828b-b088-814b8f65a932" class="toggle"><li><details open=""><summary><strong>결과 평가 (팀 단위)</strong></summary><div style="display:contents" dir="auto"><ul id="2cae4a29-6d9d-83b0-a8cf-818651f1935b" class="bulleted-list"><li style="list-style-type:disc">평가자 : 주 강사님</li></ul></div><div style="display:contents" dir="auto"><ul id="8ffe4a29-6d9d-838f-ade8-8103cffe9df9" class="bulleted-list"><li style="list-style-type:disc">평가단위 : 팀 단위 평가</li></ul></div><div style="display:contents" dir="auto"><ul id="900e4a29-6d9d-8352-b2f7-013f41050d14" class="bulleted-list"><li style="list-style-type:disc">평가항목 : 하단 토글 확인<div style="display:contents" dir="auto"><ul id="adbe4a29-6d9d-8227-9dc9-01ccc60723d2" class="toggle"><li><details open=""><summary>평가 항목 리스트</summary><div style="display:contents" dir="auto"><ul id="994e4a29-6d9d-82b5-b589-81c5efaa8275" class="bulleted-list"><li style="list-style-type:disc"><strong>프로젝트 기획 및 주제 선정</strong><div style="display:contents" dir="auto"><ul id="97ce4a29-6d9d-8319-b68b-81ac90ed929e" class="bulleted-list"><li style="list-style-type:circle">프로젝트 난이도 및 요구 사항에 적합한 주제를 선정하였나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="873e4a29-6d9d-825f-8dfa-81229a24bf51" class="bulleted-list"><li style="list-style-type:disc"><strong>데이터 전처리 및 탐색</strong><div style="display:contents" dir="auto"><ul id="937e4a29-6d9d-823c-b8ac-81b479fbe08e" class="bulleted-list"><li style="list-style-type:circle">문제 해결에 필요한 데이터를 적절히 수집하였나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="4b5e4a29-6d9d-824e-b19d-01c06c3349f4" class="bulleted-list"><li style="list-style-type:circle">충분한 데이터 전처리 과정을 진행하였나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="f92e4a29-6d9d-82c8-b7df-010ae80fb8bc" class="bulleted-list"><li style="list-style-type:disc"><strong>모델 선정 및 설계</strong><div style="display:contents" dir="auto"><ul id="830e4a29-6d9d-83b0-8cb1-81ffff891c70" class="bulleted-list"><li style="list-style-type:circle">적절한 딥러닝 모델을 선택하고 설계하였나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="4b3e4a29-6d9d-83ec-9158-812db227aa6f" class="bulleted-list"><li style="list-style-type:circle">모델 설계와 선택 이유를 명확히 설명하고 있나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="bf6e4a29-6d9d-83f3-b9ce-01e1c39fcea0" class="bulleted-list"><li style="list-style-type:disc"><strong>모델 훈련 및 평가</strong><div style="display:contents" dir="auto"><ul id="e52e4a29-6d9d-8300-8089-81b39c3232f1" class="bulleted-list"><li style="list-style-type:circle">적절한 하이퍼파라미터 튜닝을 수행하였나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="86be4a29-6d9d-825e-a3e8-8148aeddb95f" class="bulleted-list"><li style="list-style-type:circle">성능을 적절한 평가 지표로 평가하였나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="004e4a29-6d9d-82f8-aa78-019e181f6b34" class="bulleted-list"><li style="list-style-type:circle">성능 개선을 위해 다양한 시도를 하였나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="af2e4a29-6d9d-83a9-85cd-8125a806bb1d" class="bulleted-list"><li style="list-style-type:disc"><strong>코드 품질 및 문서화</strong><div style="display:contents" dir="auto"><ul id="36fe4a29-6d9d-8352-8cc0-015cd42f7419" class="bulleted-list"><li style="list-style-type:circle">코드가 가독성과 유지보수성을 고려하여 작성되었나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="7c5e4a29-6d9d-8262-9653-816ed2cb330a" class="bulleted-list"><li style="list-style-type:circle">코드 내 주석 및 마크다운이 잘 작성되어 있나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="a07e4a29-6d9d-8306-86f1-81f67866ffc6" class="bulleted-list"><li style="list-style-type:disc"><strong>결과 해석 및 비즈니스 시사점</strong><div style="display:contents" dir="auto"><ul id="44ee4a29-6d9d-83a0-ba47-81983f796c12" class="bulleted-list"><li style="list-style-type:circle">결과를 비즈니스 관점에서 해석하고 시사점을 도출하였나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="b32e4a29-6d9d-8270-8533-018438158ba3" class="bulleted-list"><li style="list-style-type:circle">결과가 초기 문제 정의와 목표를 잘 충족하고 있나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="811e4a29-6d9d-83a7-be74-01d55761b51a" class="bulleted-list"><li style="list-style-type:disc"><strong>결과 발표</strong><div style="display:contents" dir="auto"><ul id="c90e4a29-6d9d-8366-b5e3-8152a45591f5" class="bulleted-list"><li style="list-style-type:circle">발표에 흐름, 결과, 시사점이 잘 나타나 있나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="88ae4a29-6d9d-8322-876b-8173f4c46807" class="bulleted-list"><li style="list-style-type:circle">발표 내용을 청자들에게 효과적으로 전달하고 있나요?</li></ul></div></li></ul></div></details></li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="89de4a29-6d9d-83aa-a504-011b8fe156e1" class="bulleted-list"><li style="list-style-type:disc">평가시점 : 프로젝트 최종 발표 직후</li></ul></div><div style="display:contents" dir="auto"><ul id="94ae4a29-6d9d-83f3-bbb6-0114bc09b3e9" class="bulleted-list"><li style="list-style-type:disc"><strong>프로젝트 최종 발표 내용과 보고서</strong>를 기반으로 프로젝트 결과를 종합적으로 평가합니다.</li></ul></div></details></li></ul></div><div style="display:contents" dir="auto"><ul id="bb8e4a29-6d9d-83d9-9734-810931820564" class="toggle"><li><details open=""><summary><strong>결과 평가 (개인 단위)</strong></summary><div style="display:contents" dir="auto"><ul id="fb6e4a29-6d9d-8343-afcc-81e5edc604ff" class="bulleted-list"><li style="list-style-type:disc">평가자 : 주 강사님</li></ul></div><div style="display:contents" dir="auto"><ul id="545e4a29-6d9d-8246-a4fc-011788c010b3" class="bulleted-list"><li style="list-style-type:disc">평가단위 : 개인 단위 평가</li></ul></div><div style="display:contents" dir="auto"><ul id="566e4a29-6d9d-8318-90c4-0107d5de6a29" class="bulleted-list"><li style="list-style-type:disc">평가항목 : 하단 토글 확인<div style="display:contents" dir="auto"><ul id="1d7e4a29-6d9d-8293-ae0f-0105ecee98e6" class="toggle"><li><details open=""><summary>평가 항목 리스트</summary><div style="display:contents" dir="auto"><ul id="211e4a29-6d9d-82f6-8e06-0199f3a5afb8" class="bulleted-list"><li style="list-style-type:disc"><strong>주제 선정</strong><div style="display:contents" dir="auto"><ul id="e70e4a29-6d9d-83d5-8c92-01e79cbdb2a6" class="bulleted-list"><li style="list-style-type:circle">프로젝트 주제 선정을 위해 유의미한 아이디어를 제시하거나, 아이디어에 대한 적절한 의견을 제시했나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="320e4a29-6d9d-829f-a184-8190b0aeecae" class="bulleted-list"><li style="list-style-type:disc"><strong>데이터 전처리 및 탐색</strong><div style="display:contents" dir="auto"><ul id="4cae4a29-6d9d-827c-be02-01150cfa8024" class="bulleted-list"><li style="list-style-type:circle">데이터에 적합한 전처리 과정을 진행하였나요?</li></ul></div><div style="display:contents" dir="auto"><ul id="c15e4a29-6d9d-8289-98ce-813764d1b710" class="bulleted-list"><li style="list-style-type:circle">충분한 탐색적 데이터 분석을 통해 데이터의 주요 패턴과 특징을 발견했나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="6f8e4a29-6d9d-8202-b46b-019a595d8252" class="bulleted-list"><li style="list-style-type:disc"><strong>모델 훈련 및 평가</strong><div style="display:contents" dir="auto"><ul id="241e4a29-6d9d-8374-8cc4-01d5b0f9d1e1" class="bulleted-list"><li style="list-style-type:circle">모델 훈련 및 평가 과정에 있어 유의미한 기여를 했나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="b0fe4a29-6d9d-8328-b9f1-01f7c1925d2d" class="bulleted-list"><li style="list-style-type:disc"><strong>업무 수행</strong><div style="display:contents" dir="auto"><ul id="2f7e4a29-6d9d-8329-b73f-8151680ea135" class="bulleted-list"><li style="list-style-type:circle">합의된 프로젝트 타임라인을 지키고 담당한 업무를 정확히 수행했나요?</li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="c99e4a29-6d9d-83b7-85bf-81fe8ee78bf7" class="bulleted-list"><li style="list-style-type:disc"><strong>결과 발표</strong><div style="display:contents" dir="auto"><ul id="e15e4a29-6d9d-829e-b5e5-01526cc1d456" class="bulleted-list"><li style="list-style-type:circle">발표시간 혹은 질의응답 시간에 적극적으로 참여하였나요?</li></ul></div></li></ul></div></details></li></ul></div></li></ul></div><div style="display:contents" dir="auto"><ul id="871e4a29-6d9d-8235-b98b-016fef185e66" class="bulleted-list"><li style="list-style-type:disc">평가시점 : 프로젝트 최종 발표 직후</li></ul></div><div style="display:contents" dir="auto"><ul id="b81e4a29-6d9d-824d-a5a1-813d8bf80321" class="bulleted-list"><li style="list-style-type:disc"><strong>개인이 작성한 협업일지, 발표 세션 참여 내역</strong> 기반으로 프로젝트 내 개인 성과를 종합적으로 평가합니다.</li></ul></div></details></li></ul></div><div style="display:contents" dir="auto"><p id="f2ae4a29-6d9d-83ed-907a-0122975e655a" class="">
+</p></div><div style="display:contents" dir="auto"><h2 id="4eee4a29-6d9d-82c2-9898-81c9fc397a15" class="">결과물 제출</h2></div><div style="display:contents" dir="auto"><p id="99fe4a29-6d9d-8317-a5ae-01cbfa010d1f" class="">아래 명시된 결과물들은 <span style="border-bottom:0.05em solid">프로젝트 종료 당일 23:50까지</span> LMS를 통해 <span style="border-bottom:0.05em solid">팀장님(또는 대표 1인)이 제출</span>해주세요.</p></div><div style="display:contents" dir="auto"><ul id="e27e4a29-6d9d-8306-a05b-013f2f238ad8" class="bulleted-list"><li style="list-style-type:disc">Github Repository 링크와 보고서는 발표를 고려하여 프로젝트 기간 종료 D-1까지 제출, 협업일지는 종료 당일 23:50까지 제출이므로 협업일지 작성 완료 후 LMS를 통해 제출하시면 되겠습니다.</li></ul></div><div style="display:contents" dir="auto"><ul id="75ce4a29-6d9d-828d-896b-0164de8ea510" class="toggle"><li><details open=""><summary>1. 결과물 제출 방법</summary><div style="display:contents" dir="auto"><ol type="1" id="5cde4a29-6d9d-8233-a0a3-01328b1ec80d" class="numbered-list" start="1"><li>LMS 좌측 하단 “내 프로젝트” 클릭<div style="display:contents" dir="ltr"><figure id="f3de4a29-6d9d-824f-b49f-011f37cfbab0" class="image"><a href="%5BAI%5D%20%EA%B3%A0%EA%B8%89%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EA%B0%80%EC%9D%B4%EB%93%9C/image.png"><img style="width:680px" src="%5BAI%5D%20%EA%B3%A0%EA%B8%89%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EA%B0%80%EC%9D%B4%EB%93%9C/image.png"/></a></figure></div></li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="99fe4a29-6d9d-835b-8099-01c6f2dba07f" class="numbered-list" start="2"><li>“[AI] 중급프로젝트” 클릭</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="41ee4a29-6d9d-828e-bde0-8176dd0ae1b1" class="numbered-list" start="3"><li>우측 “프로젝트 결과물 제출하기” 버튼 클릭하여 <strong>Github Repository 링크 첨부</strong></li></ol></div></details></li></ul></div><div style="display:contents" dir="auto"><ul id="b78e4a29-6d9d-821d-a0df-012f9db98473" class="toggle"><li><details open=""><summary>2. 제출해야하는 결과물 목록</summary><div style="display:contents" dir="auto"><ol type="1" id="61de4a29-6d9d-8347-9450-016143bb8599" class="numbered-list" start="1"><li> 구현한 서비스를 재현할 수 있는 코드가 담긴 <code>Github Repository 링크</code><div style="display:contents" dir="auto"><ol type="a" id="bf8e4a29-6d9d-839e-babd-01a6f2978843" class="numbered-list" start="1"><li>팀 명의로 링크 1개 제출</li></ol></div><div style="display:contents" dir="auto"><ol type="a" id="585e4a29-6d9d-8275-b639-81c18d6ea192" class="numbered-list" start="2"><li><strong>프로젝트 기간 종료일 D-1 19:00 (주말 제외) </strong>제출 마감</li></ol></div><div style="display:contents" dir="auto"><ol type="a" id="5a2e4a29-6d9d-83ae-bda7-01d2eab44265" class="numbered-list" start="3"><li>이후에 수정되더라도 제출 마감 직전 커밋된 버전으로 채점합니다.</li></ol></div></li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="831e4a29-6d9d-83f7-8c87-818153220ccc" class="numbered-list" start="2"><li>프로젝트 진행 과정, 결과, 성과 및 개선 사항들이 포함되도록 일목요연하게 정리한 <code>보고서 pdf 파일</code><div style="display:contents" dir="auto"><ol type="a" id="e43e4a29-6d9d-83d8-9b47-81c0dc5e3c48" class="numbered-list" start="1"><li>팀 명의로 파일 1개 제출</li></ol></div><div style="display:contents" dir="auto"><ol type="a" id="f30e4a29-6d9d-8215-9d61-816aaa6d1912" class="numbered-list" start="2"><li>Github Repository Readme에 보고서 파일을 다운로드 할 수 있도록 첨부해주세요.</li></ol></div><div style="display:contents" dir="auto"><ol type="a" id="a93e4a29-6d9d-8324-bfc7-812674028f81" class="numbered-list" start="3"><li><strong>프로젝트 기간 종료일 D-1 19:00 (주말 제외)</strong> 제출 마감</li></ol></div><div style="display:contents" dir="auto"><ol type="a" id="d51e4a29-6d9d-8335-9bb4-01171b3873a8" class="numbered-list" start="4"><li>이후에 수정되더라도 제출 마감 직전 버전으로 채점합니다.</li></ol></div></li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="11de4a29-6d9d-8354-b14b-8121035c07e1" class="numbered-list" start="3"><li>협업 일지<div style="display:contents" dir="auto"><ol type="a" id="7e5e4a29-6d9d-8318-9ec3-8153992b3a3f" class="numbered-list" start="1"><li>개인 단위로 작성하되, 내용을 확인할 수 있도록 Readme에 링크를 걸어주세요.<div style="display:contents" dir="auto"><ol type="i" id="1dae4a29-6d9d-833e-a5d0-8140e6b34553" class="numbered-list" start="1"><li>Notion이나 개인 블로그 등 링크 형태일 경우 해당 링크를 넣어주세요.</li></ol></div><div style="display:contents" dir="auto"><ol type="i" id="218e4a29-6d9d-82d4-932e-81b7bb749d79" class="numbered-list" start="2"><li>이외의 경우라면 pdf 형태로 변환하여 첨부해주세요.</li></ol></div></li></ol></div><div style="display:contents" dir="auto"><ol type="a" id="fdfe4a29-6d9d-83b0-a7cb-81c3cc1f0980" class="numbered-list" start="2"><li><strong>프로젝트 기간 종료일</strong> <strong>23:50 </strong>제출 마감 <em>(협업 일지는 하루 뒤 제출 마감이에요!)</em></li></ol></div></li></ol></div></details></li></ul></div><div style="display:contents" dir="auto"><p id="ffce4a29-6d9d-82fb-86c1-01fc3372c157" class="">
+</p></div><div style="display:contents" dir="auto"><h3 id="639e4a29-6d9d-821f-b1f4-012ecdda0670" class="">참고자료</h3></div><div style="display:contents" dir="auto"><ul id="9e8e4a29-6d9d-8214-a986-811eff01b5a3" class="toggle"><li><details open=""><summary>협업 일지 양식 예시</summary><div style="display:contents" dir="ltr"><figure id="fc3e4a29-6d9d-823f-a864-017e95ee3c2b" class="link-to-page"><a href="https://www.notion.so/Daily-fc3e4a296d9d823fa864017e95ee3c2b?pvs=21">Daily 협업일지 양식</a></figure></div></details></li></ul></div><div style="display:contents" dir="auto"><h3 id="923e4a29-6d9d-82fb-b283-0174199ab151" class=""><mark class="highlight-red">주의사항</mark></h3></div><div style="display:contents" dir="auto"><p id="964e4a29-6d9d-8318-bd3f-8114e6a55545" class="">다른 팀의 작업/결과물에 대한 복제를 절대 금합니다.</p></div><div style="display:contents" dir="auto"><p id="76ce4a29-6d9d-82e2-8bd9-01d482ffc298" class="">완벽한 과제를 지향하기 보다는, 치열한 고민으로 우리만의 결과물을 완성하는 경험을 해보는데 집중합시다 🤗</p></div><div style="display:contents" dir="auto"><p id="903e4a29-6d9d-82f6-a9da-81c9dbeb660e" class="">(<em>복제 적발 시 해당 팀의 성적은 전 영역 0점 처리되며, 평가 및 발표 세션에서 제외됩니다.</em>)</p></div><div style="display:contents" dir="auto"><p id="145e4a29-6d9d-8276-8cc4-81ef175a2c66" class="">기타 프로젝트 관련 문의사항은 디스코드 내 <code>Q&amp;A 채널</code>을 이용해주세요!</p></div><div style="display:contents" dir="auto"><p id="244e4a29-6d9d-83f8-8044-81a39e1ec339" class="">
+</p></div><div style="display:contents" dir="auto"><hr id="1f8e4a29-6d9d-827a-be78-81d8d48c8655"/></div><div style="display:contents" dir="auto"><p id="318e4a29-6d9d-83f2-b763-011a49a08300" class="">
+</p></div><div style="display:contents" dir="ltr"><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="b89e4a29-6d9d-828c-8f6f-0123cda5c575"><div style="font-size:1.5em"><span class="icon">⚠️</span></div><div style="width:100%"><mark class="highlight-gray">본 페이지를 통해 제공하는 모든 자료는 저작권법에 의해 보호받는 ㈜코드잇의 자산이며, 무단 사용 및 도용, 복제 및 배포를 금합니다. 스프린트 과정 외부로의 링크 공유 등, 모든 형태의 유출을 금합니다.</mark><div style="display:contents" dir="auto"><p id="66ee4a29-6d9d-83c1-9927-0135541fde0c" class="block-color-gray">Copyright 2025 코드잇 Inc. All rights reserved.</p></div></div></figure></div><div style="display:contents" dir="auto"><p id="8f5e4a29-6d9d-8326-b913-01f5ce106afd" class="">
+</p></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
