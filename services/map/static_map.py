@@ -31,14 +31,18 @@ def download_static_map(
         "X-NCP-APIGW-API-KEY-ID": os.environ["NAVER_CLIENT_ID"],
         "X-NCP-APIGW-API-KEY": os.environ["NAVER_CLIENT_SECRET"],
     }
-    params = {
-        "center": f"{lng},{lat}",
-        "level": 15,
-        "w": MAP_W,
-        "h": MAP_H,
-        "format": "png",
-        "markers": f"type:d|size:mid|pos:{lng} {lat}|color:red",
-    }
+    # 매물 위치(빨강) + 각 지하철역(파랑)을 markers로 추가
+    params: list[tuple[str, str | int]] = [
+        ("center", f"{lng},{lat}"),
+        ("level", 15),
+        ("w", MAP_W),
+        ("h", MAP_H),
+        ("format", "png"),
+        ("markers", f"type:d|size:mid|pos:{lng} {lat}|color:red"),
+    ]
+    for s in subway_list:
+        params.append(("markers", f"type:d|size:mid|pos:{s['lng']} {s['lat']}|color:blue"))
+
     resp = requests.get(STATIC_MAP_URL, params=params, headers=headers)
     resp.raise_for_status()
 

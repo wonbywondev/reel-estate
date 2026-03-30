@@ -37,8 +37,11 @@ Gen_for_SmallBusiness/
 │   ├── map/
 │   │   ├── __init__.py
 │   │   ├── geocoding.py          # 주소 → 좌표 변환
-│   │   ├── subway.py             # 근처 지하철역 + 도보 거리
-│   │   └── static_map.py         # Static Map 이미지 다운로드
+│   │   ├── subway/               # 근처 지하철역 + 도보 거리
+│   │   │   ├── __init__.py
+│   │   │   ├── finder.py         # Directions API로 거리 계산, 호선별 최대 3개 반환
+│   │   │   └── station_db.py     # 공공데이터 CSV 로드 + Haversine 반경 필터
+│   │   └── static_map.py         # Static Map 이미지 다운로드 (매물 빨강, 역 파랑 마커)
 │   ├── street/
 │   │   ├── __init__.py
 │   │   └── playwright_shot.py    # 스트리트뷰 스크린샷 (실패 시 위성지도)
@@ -57,7 +60,9 @@ Gen_for_SmallBusiness/
 │   └── models.py                 # 방 데이터 스키마
 ├── assets/
 │   ├── fonts/                    # 한글 자막용 폰트
-│   └── bgm/                      # 저작권 없는 배경음악
+│   ├── bgm/                      # 저작권 없는 배경음악
+│   └── data/
+│       └── subway/               # 공공데이터 CSV (서울 1~9호선, 인천 연수구)
 ├── output/                       # 생성된 영상 저장
 └── .env                          # API 키
 ```
@@ -102,7 +107,10 @@ CREATE TABLE rooms (
 
 ### 네이버 지도 API
 - Static Map: 좌표 기반 이미지 URL → 직접 다운로드 가능
-- 장소 검색: 키워드로 근처 지하철역 검색 후 도보 거리 계산
+- 지하철역 검색: Naver Search API 대신 공공데이터 CSV 로컬 DB 사용 (Search API는 반경 검색 미지원)
+  - 공공데이터 CSV → Haversine 반경 3km 1차 필터 → Directions API로 실제 거리 계산
+  - 가장 가까운 역 거리 + 500m 이내, 호선별 1개, 최대 3개 반환
+- Static Map: 매물 위치(빨강 마커) + 지하철역(파랑 마커), 경로선은 API 미지원으로 제외
 - 스트리트뷰(파노라마): JS 전용 → Playwright로 스크린샷, 실패 시 위성지도 fallback
 - 대중교통 경로: 유료 → MVP에서 제외, 도보 거리만 표시
 

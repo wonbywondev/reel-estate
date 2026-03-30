@@ -35,6 +35,8 @@ def find_nearby_subways(lat: float, lng: float) -> list[dict]:
             "station": f"{station.name} {station.line}",
             "walk_min": round(duration_ms / 60000),
             "walk_m": distance_m,
+            "lat": station.lat,
+            "lng": station.lng,
         })
 
     if not results:

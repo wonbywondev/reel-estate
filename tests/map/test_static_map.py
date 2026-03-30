@@ -1,10 +1,10 @@
 from unittest.mock import patch, Mock
-from services.map.static_map import download_static_map
+from services.map.static_map import download_static_map, MAP_W, MAP_H
 
 FAKE_PNG = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc````\x00\x00\x00\x05\x00\x01\xa5\xf6E@\x00\x00\x00\x00IEND\xaeB`\x82'
 SUBWAY_LIST = [
-    {"station": "강남역 2호선", "walk_min": 5, "walk_m": 400},
-    {"station": "신논현역 9호선", "walk_min": 7, "walk_m": 600},
+    {"station": "강남역 2호선", "walk_min": 5, "walk_m": 400, "lat": 37.4979507, "lng": 127.0276368},
+    {"station": "신논현역 9호선", "walk_min": 7, "walk_m": 600, "lat": 37.5050000, "lng": 127.0250000},
 ]
 
 
@@ -40,6 +40,10 @@ def test_download_static_map_uses_correct_params():
             save_path="/tmp/test_map.png",
         )
         call_params = mock_get.call_args[1]["params"]
-        assert "127.0276368" in call_params["center"]
-        assert call_params["w"] == 1080
-        assert call_params["h"] == 608
+        params_dict = dict(call_params)
+        assert "127.0276368" in params_dict["center"]
+        assert params_dict["w"] == MAP_W
+        assert params_dict["h"] == MAP_H
+        marker_values = [v for k, v in call_params if k == "markers"]
+        assert any("red" in m for m in marker_values)
+        assert any("blue" in m for m in marker_values)
