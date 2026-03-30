@@ -3,16 +3,16 @@
 ## Phase 1 — 코어 파이프라인
 
 ### 1-1. 프로젝트 기반 세팅
-- [ ] `pyproject.toml` 의존성 추가
-- [ ] `.env.example` 생성
-- [ ] 폴더 구조 및 `__init__.py` 생성
+- [x] `pyproject.toml` 의존성 추가
+- [x] `.env.example` 생성
+- [x] 폴더 구조 및 `__init__.py` 생성
 
 ### 1-2. DB
-- [ ] `db/models.py` — rooms 스키마
-- [ ] `db/database.py` — SQLite CRUD
+- [x] `db/models.py` — rooms 스키마
+- [x] `db/database.py` — SQLite CRUD
 
 ### 1-3. 지도 서비스
-- [ ] `services/map/geocoding.py` — 주소 → 좌표
+- [x] `services/map/geocoding.py` — 주소 → 좌표
 - [ ] `services/map/subway.py` — 지하철역 + 도보 거리
 - [ ] `services/map/static_map.py` — 지도 이미지 다운로드
 
