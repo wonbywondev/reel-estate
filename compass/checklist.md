@@ -18,8 +18,8 @@
 - [x] `assets/data/subway/` — 공공데이터 CSV (서울 1~9호선, 인천 연수구)
 
 ### 1-4. 스트리트뷰
-- [ ] `services/street/playwright_shot.py` — 스크린샷
-- [ ] fallback: 위성지도 이미지
+- [x] `services/street/playwright_shot.py` — 스크린샷
+- [x] fallback: 위성지도 이미지
 
 ### 1-5. AI 카피
 - [ ] `services/ai/copy_writer.py` — gpt-5-mini 카피 생성
