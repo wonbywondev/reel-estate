@@ -1,7 +1,4 @@
 from unittest.mock import patch, Mock
-from pathlib import Path
-import os
-import pytest
 from services.map.static_map import download_static_map
 
 

@@ -14,7 +14,7 @@
 ### 1-3. 지도 서비스
 - [x] `services/map/geocoding.py` — 주소 → 좌표
 - [x] `services/map/subway.py` — 지하철역 + 도보 거리
-- [ ] `services/map/static_map.py` — 지도 이미지 다운로드
+- [x] `services/map/static_map.py` — 지도 이미지 다운로드
 
 ### 1-4. 스트리트뷰
 - [ ] `services/street/playwright_shot.py` — 스크린샷
