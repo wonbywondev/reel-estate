@@ -26,9 +26,9 @@
 - [x] 프롬프트 검증 (후크, 특징 3줄, 해시태그)
 
 ### 1-6. 영상 생성
-- [ ] `services/video/templates.py` — 슬라이드 이미지 합성
-- [ ] `services/video/renderer.py` — MoviePy 영상 렌더링
-- [ ] 한글 폰트 assets/fonts/ 배치
+- [x] `services/video/templates.py` — 슬라이드 이미지 합성 (cover crop, 5슬라이드)
+- [x] `services/video/renderer.py` — MoviePy 영상 렌더링 (BGM 선택적)
+- [x] 한글 폰트 assets/fonts/ 배치
 - [ ] BGM 파일 assets/bgm/ 배치
 
 ### 1-7. Streamlit UI
