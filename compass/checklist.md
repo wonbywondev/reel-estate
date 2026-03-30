@@ -22,8 +22,8 @@
 - [x] fallback: 위성지도 이미지
 
 ### 1-5. AI 카피
-- [ ] `services/ai/copy_writer.py` — gpt-5-mini 카피 생성
-- [ ] 프롬프트 검증 (후크, 특징 3줄, 해시태그)
+- [x] `services/ai/copy_writer.py` — gpt-5-mini 카피 생성
+- [x] 프롬프트 검증 (후크, 특징 3줄, 해시태그)
 
 ### 1-6. 영상 생성
 - [ ] `services/video/templates.py` — 슬라이드 이미지 합성
