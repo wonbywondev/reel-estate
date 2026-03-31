@@ -186,23 +186,16 @@ def slide_room_info(
 # 슬라이드 4: AI 광고 카피
 # ---------------------------------------------------------------------------
 
-def slide_copy(hook: str, features: list[str]) -> Image.Image:
+def slide_copy(features: list[str]) -> Image.Image:
     img = _base()
     draw = ImageDraw.Draw(img)
 
-    f_hook = _font(80)
-    f_feat = _font(52)
+    f_feat = _font(60)
 
-    y = 300
-    _draw_text_wrapped(draw, y, hook, f_hook, YELLOW)
-    y += 200
-
-    draw.line([(80, y), (W - 80, y)], fill=GRAY, width=2)
-    y += 60
-
+    y = 600
     for feat in features:
         _draw_text_centered(draw, y, f"✔  {feat}", f_feat)
-        y += 90
+        y += 120
 
     return img
 

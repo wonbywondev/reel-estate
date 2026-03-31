@@ -81,6 +81,10 @@ class Database:
         )
         self.conn.commit()
 
+    def delete_room(self, room_id: int) -> None:
+        self.conn.execute("DELETE FROM rooms WHERE id = ?", (room_id,))
+        self.conn.commit()
+
     def update_location(self, room_id: int, lat: float, lng: float, subway_info: dict):
         self.conn.execute(
             "UPDATE rooms SET lat=?, lng=?, subway_info=? WHERE id=?",

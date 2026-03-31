@@ -39,11 +39,68 @@ if "db" not in st.session_state:
 db: Database = st.session_state["db"]
 
 # ---------------------------------------------------------------------------
-# 레이아웃
+# 페이지 설정
 # ---------------------------------------------------------------------------
 
 st.set_page_config(page_title="부동산 릴스 생성기", page_icon="🏠", layout="wide")
 st.title("🏠 부동산 릴스 자동 생성기")
+
+# ---------------------------------------------------------------------------
+# 사이드바: 매물 목록
+# ---------------------------------------------------------------------------
+
+with st.sidebar:
+    st.header("📋 매물 목록")
+
+    rooms = db.list_rooms()
+    if not rooms:
+        st.caption("아직 생성된 매물이 없습니다.")
+    else:
+        for room in rooms:
+            with st.expander(f"#{room.id} {room.address[:20]}", expanded=False):
+                price = (
+                    f"전세 {room.deposit:,}만원"
+                    if room.monthly_rent == 0
+                    else f"보증 {room.deposit:,} / 월세 {room.monthly_rent}만원"
+                )
+                st.caption(f"{price} | {room.size_pyeong}평 {room.floor}층")
+
+                slug = room.address[:10].replace(' ', '_')
+                video_path = str(OUTPUT_DIR / f"reels_{slug}.mp4")
+
+                # 영상 다운로드
+                if Path(video_path).exists():
+                    with open(video_path, "rb") as vf:
+                        st.download_button(
+                            label="⬇️ MP4",
+                            data=vf,
+                            file_name=Path(video_path).name,
+                            mime="video/mp4",
+                            key=f"dl_{room.id}",
+                        )
+
+                # 재생성
+                if st.button("🔄 재생성", key=f"regen_{room.id}"):
+                    st.session_state["regen_room_id"] = room.id
+                    st.rerun()
+
+                # 삭제
+                if st.button("🗑️ 삭제", key=f"del_{room.id}"):
+                    if room.id:
+                        db.delete_room(room.id)
+                    st.rerun()
+
+# ---------------------------------------------------------------------------
+# 재생성 처리
+# ---------------------------------------------------------------------------
+
+regen_room: Room | None = None
+if "regen_room_id" in st.session_state:
+    regen_room = db.get_room(st.session_state.pop("regen_room_id"))
+
+# ---------------------------------------------------------------------------
+# 레이아웃
+# ---------------------------------------------------------------------------
 
 left, right = st.columns([1, 1], gap="large")
 
@@ -53,19 +110,37 @@ left, right = st.columns([1, 1], gap="large")
 
 with left:
     st.subheader("매물 정보 입력")
+
+    # 재생성 시 기존 값으로 채우기
+    defaults = {
+        "address": regen_room.address if regen_room else "",
+        "deposit": regen_room.deposit if regen_room else 1000,
+        "monthly_rent": regen_room.monthly_rent if regen_room else 50,
+        "size_pyeong": regen_room.size_pyeong if regen_room else 10.0,
+        "floor": regen_room.floor if regen_room else 3,
+        "year_built": regen_room.year_built if regen_room else 2015,
+        "options": regen_room.options if regen_room else ["에어컨", "세탁기", "냉장고"],
+    }
+
     with st.form("room_form"):
-        address = st.text_input("도로명 주소 *", placeholder="예: 서울시 강남구 역삼동 123")
+        address = st.text_input("도로명 주소 *", value=defaults["address"],
+                                placeholder="예: 서울시 강남구 역삼동 123")
 
         col1, col2 = st.columns(2)
         with col1:
-            deposit = st.number_input("보증금 (만원)", min_value=0, value=1000, step=100)
-            size_pyeong = st.number_input("평수", min_value=1.0, value=10.0, step=0.5)
-            year_built = st.number_input("준공연도", min_value=1970, max_value=2030, value=2015)
+            deposit = st.number_input("보증금 (만원)", min_value=0,
+                                      value=defaults["deposit"], step=100)
+            size_pyeong = st.number_input("평수", min_value=1.0,
+                                          value=float(defaults["size_pyeong"]), step=0.5)
+            year_built = st.number_input("준공연도", min_value=1970, max_value=2030,
+                                         value=defaults["year_built"])
         with col2:
-            monthly_rent = st.number_input("월세 (만원, 전세면 0)", min_value=0, value=50, step=5)
-            floor = st.number_input("층수", min_value=1, max_value=50, value=3)
+            monthly_rent = st.number_input("월세 (만원, 전세면 0)", min_value=0,
+                                           value=defaults["monthly_rent"], step=5)
+            floor = st.number_input("층수", min_value=1, max_value=50,
+                                    value=defaults["floor"])
 
-        options = st.multiselect("옵션", OPTIONS_LIST, default=["에어컨", "세탁기", "냉장고"])
+        options = st.multiselect("옵션", OPTIONS_LIST, default=defaults["options"])
 
         submitted = st.form_submit_button("✨ 릴스 생성", use_container_width=True, type="primary")
 
@@ -77,9 +152,10 @@ with right:
     st.subheader("생성 결과")
 
     if submitted:
-        if not address.strip():
+        if not address or not address.strip():
             st.error("주소를 입력해주세요.")
             st.stop()
+        assert isinstance(address, str)
 
         # --- 1. 주소 → 좌표 ---
         with st.status("📍 주소 좌표 변환 중...", expanded=True) as status:
@@ -103,7 +179,8 @@ with right:
 
             # --- 3. 지도 이미지 ---
             status.update(label="🗺️ 지도 이미지 다운로드 중...")
-            map_path = str(OUTPUT_DIR / f"map_{address[:10].replace(' ', '_')}.png")
+            slug = address[:10].replace(' ', '_')
+            map_path = str(OUTPUT_DIR / f"map_{slug}.png")
             try:
                 download_static_map(lat, lng, subway_list, map_path)
                 st.write("지도 이미지 저장 완료")
@@ -113,7 +190,7 @@ with right:
 
             # --- 4. 거리뷰 ---
             status.update(label="📸 거리뷰 스크린샷 촬영 중...")
-            sv_path = str(OUTPUT_DIR / f"sv_{address[:10].replace(' ', '_')}.png")
+            sv_path = str(OUTPUT_DIR / f"sv_{slug}.png")
             try:
                 take_street_view(lat, lng, sv_path)
                 st.write("거리뷰 저장 완료")
@@ -141,7 +218,6 @@ with right:
 
             # --- 6. 영상 렌더링 ---
             status.update(label="🎬 영상 렌더링 중...")
-            slug = address[:10].replace(' ', '_')
             video_path = str(OUTPUT_DIR / f"reels_{slug}.mp4")
             try:
                 slides = [
@@ -156,7 +232,7 @@ with right:
                         year_built=int(year_built),
                         options=list(options),
                     ), 3.0),
-                    (slide_copy(copy["hook"], copy["features"]), 4.0),
+                    (slide_copy(copy["features"]), 4.0),
                     (slide_cta(copy["cta"], copy["hashtags"]), 3.0),
                 ]
                 render_video(slides, video_path)
@@ -179,13 +255,14 @@ with right:
                 subway_info=subway_list,
             )
             room_id = db.insert_room(room)
+            if video_path:
+                db.update_video_path(room_id, video_path)
 
             status.update(label="✅ 완료!", state="complete", expanded=False)
 
         # --- 결과 표시 ---
         st.divider()
 
-        # 영상
         if video_path and Path(video_path).exists():
             st.markdown("### 🎬 생성된 릴스")
             st.video(video_path)
@@ -210,8 +287,8 @@ with right:
 
         st.divider()
         st.markdown("### 📝 광고 카피")
-        for f in copy["features"]:
-            st.markdown(f"- {f}")
+        for feat in copy["features"]:
+            st.markdown(f"- {feat}")
         st.markdown(f"**CTA:** {copy['cta']}")
 
         hashtag_str = " ".join(copy["hashtags"])
