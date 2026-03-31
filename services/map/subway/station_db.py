@@ -25,6 +25,7 @@ def load_stations() -> list[Station]:
     _load_seoul_9(stations)
     _load_korail_line2(stations)
     _load_incheon_yeonsu(stations)
+    _load_busan(stations)
 
     return list(stations.values())
 
@@ -106,6 +107,26 @@ def _load_korail_line2(stations: dict) -> None:
                      line=row["선명"],
                      lat=float(row["위도"]),
                      lng=float(row["경도"]))
+            except (ValueError, KeyError):
+                continue
+
+
+def _load_busan(stations: dict) -> None:
+    path = DATA_DIR / "부산교통공사_도시철도역사정보_20210226.csv"
+    if not path.exists():
+        return
+    with open(path, encoding="utf-16") as f:
+        for row in csv.DictReader(f, delimiter="\t"):
+            try:
+                name = row["역사명"]
+                if not name.endswith("역"):
+                    name += "역"
+                line = row["노선명"].replace("부산도시철도 ", "부산")
+                _add(stations,
+                     name=name,
+                     line=line,
+                     lat=float(row["역위도"]),
+                     lng=float(row["역경도"]))
             except (ValueError, KeyError):
                 continue
 
