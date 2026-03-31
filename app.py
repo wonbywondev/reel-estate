@@ -58,8 +58,8 @@ with st.sidebar:
     if not rooms:
         st.caption("아직 생성된 매물이 없습니다.")
     else:
-        for room in rooms:
-            with st.expander(f"#{room.id} {room.address[:20]}", expanded=False):
+        for idx, room in enumerate(rooms, 1):
+            with st.expander(f"#{idx} {room.address[:20]}", expanded=False):
                 price = (
                     f"전세 {room.deposit:,}만원"
                     if room.monthly_rent == 0
