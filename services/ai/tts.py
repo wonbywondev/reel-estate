@@ -1,27 +1,27 @@
-"""OpenAI TTS로 텍스트를 MP3 오디오 파일로 변환한다."""
+"""TTS 서버(tts_server/)를 호출해 텍스트를 MP3 파일로 저장한다."""
 import os
 from pathlib import Path
 
-from openai import OpenAI
-from dotenv import load_dotenv
+import requests
 
-load_dotenv()
-
-VOICE = "nova"   # 밝고 친근한 여성 목소리
-MODEL = "tts-1"
+TTS_SERVER_URL = os.environ.get("TTS_SERVER_URL", "http://localhost:8000")
 
 
 def text_to_speech(text: str, save_path: str) -> str:
-    """텍스트를 TTS로 변환해 save_path에 MP3로 저장한다.
+    """TTS 서버에 텍스트를 보내 MP3로 저장한다.
 
     Returns:
         저장된 파일 경로
+
+    Raises:
+        RuntimeError: 서버 호출 실패 시
     """
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    response = client.audio.speech.create(
-        model=MODEL,
-        voice=VOICE,
-        input=text,
+    resp = requests.post(
+        f"{TTS_SERVER_URL}/synthesize",
+        json={"text": text},
+        timeout=30,
     )
-    Path(save_path).write_bytes(response.content)
+    if not resp.ok:
+        raise RuntimeError(f"TTS 서버 오류 {resp.status_code}: {resp.text}")
+    Path(save_path).write_bytes(resp.content)
     return save_path
