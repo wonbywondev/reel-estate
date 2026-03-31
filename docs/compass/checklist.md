@@ -56,6 +56,9 @@
 
 ### 편의시설 검색 개선
 - [x] `find_nearby_shops(region_hint)` — 지역명 prefix 검색
+- [x] ALLOWED_CATEGORIES 화이트리스트 필터링 (카테고리 무관 노이즈 제거)
+- [x] DISALLOWED_NAME_KEYWORDS 블랙리스트 필터링 (상인회 등)
+- [x] 공원 검색 추가 (반경 2km, 최대 2개)
 
 ### 슬라이드 디자인 개선
 - [x] 폰트 에이투지체-7Bold 적용 (fallback: NanumGothic)

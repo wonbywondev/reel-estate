@@ -13,7 +13,24 @@ GEOCODE_URL = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode"
 SHOP_CATEGORIES: list[tuple[list[str], int, int]] = [
     (["대형마트", "코스트코", "이마트", "홈플러스", "롯데마트", "슈퍼마켓", "전통시장", "다이소"], 10_000, 5),
     (["편의점"], 1_000, 1),
+    (["공원"], 2_000, 2),
 ]
+
+# 허용 카테고리 키워드 (네이버 category 필드 부분 일치)
+ALLOWED_CATEGORIES = (
+    "슈퍼,마트",
+    "종합생활용품",
+    "편의점",
+    "시장",
+    "백화점",
+    "근린공원",
+    "공원",
+)
+
+# 이름에 포함 시 제외할 키워드
+DISALLOWED_NAME_KEYWORDS = (
+    "상인회",
+)
 
 
 def find_nearby_shops(lat: float, lng: float, region_hint: str = "") -> list[dict]:
@@ -56,6 +73,12 @@ def find_nearby_shops(lat: float, lng: float, region_hint: str = "") -> list[dic
                 mapy = item.get("mapy")
 
                 if not name or name in seen:
+                    continue
+
+                if not any(kw in category for kw in ALLOWED_CATEGORIES):
+                    continue
+
+                if any(kw in name for kw in DISALLOWED_NAME_KEYWORDS):
                     continue
 
                 if mapx and mapy:

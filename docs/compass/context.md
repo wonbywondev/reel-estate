@@ -128,7 +128,9 @@ CREATE TABLE rooms (
   - 가장 가까운 역 거리 + 500m 이내, 호선별 1개, 최대 3개 반환
 - 편의시설 검색: 네이버 Local Search API — 지도 API와 별도 앱/키
   - 쿼리에 region_hint(예: "인천 연수구") prefix를 붙여 지역 필터링
-  - 대형마트/다이소 반경 10km 최대 5개, 편의점 반경 1km 최대 1개
+  - 대형마트/다이소 반경 10km 최대 5개, 편의점 반경 1km 최대 1개, 공원 반경 2km 최대 2개
+  - ALLOWED_CATEGORIES: 슈퍼마트/종합생활용품/편의점/시장/백화점/공원만 허용
+  - DISALLOWED_NAME_KEYWORDS: 상인회 등 노이즈 이름 제외
 - 스트리트뷰: Playwright → pano_id 추출 → 전체화면 캡처, JS로 dialog 숨김 처리
 
 ### OpenAI API
