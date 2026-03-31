@@ -10,8 +10,10 @@ from services.map.subway import find_nearby_subways
 from services.map.static_map import download_static_map
 from services.street.playwright_shot import take_street_view
 from services.ai.copy_writer import generate_copy
+from services.ai.tts import text_to_speech
 from services.video.templates import (
-    slide_map, slide_street, slide_room_info, slide_copy, slide_cta,
+    slide_map, slide_street, slide_interior,
+    slide_room_info, slide_copy, slide_cta,
 )
 from services.video.renderer import render_video
 
@@ -68,7 +70,6 @@ with st.sidebar:
                 slug = room.address[:10].replace(' ', '_')
                 video_path = str(OUTPUT_DIR / f"reels_{slug}.mp4")
 
-                # 영상 다운로드
                 if Path(video_path).exists():
                     with open(video_path, "rb") as vf:
                         st.download_button(
@@ -79,12 +80,10 @@ with st.sidebar:
                             key=f"dl_{room.id}",
                         )
 
-                # 재생성
                 if st.button("🔄 재생성", key=f"regen_{room.id}"):
                     st.session_state["regen_room_id"] = room.id
                     st.rerun()
 
-                # 삭제
                 if st.button("🗑️ 삭제", key=f"del_{room.id}"):
                     if room.id:
                         db.delete_room(room.id)
@@ -111,7 +110,6 @@ left, right = st.columns([1, 1], gap="large")
 with left:
     st.subheader("매물 정보 입력")
 
-    # 재생성 시 기존 값으로 채우기
     defaults = {
         "address": regen_room.address if regen_room else "",
         "deposit": regen_room.deposit if regen_room else 1000,
@@ -120,6 +118,8 @@ with left:
         "floor": regen_room.floor if regen_room else 3,
         "year_built": regen_room.year_built if regen_room else 2015,
         "options": regen_room.options if regen_room else ["에어컨", "세탁기", "냉장고"],
+        "loan_available": regen_room.loan_available if regen_room else False,
+        "agent_comment": regen_room.agent_comment if regen_room else "",
     }
 
     with st.form("room_form"):
@@ -141,6 +141,16 @@ with left:
                                     value=defaults["floor"])
 
         options = st.multiselect("옵션", OPTIONS_LIST, default=defaults["options"])
+        loan_available = st.checkbox("전세 대출 가능", value=defaults["loan_available"])
+        agent_comment = st.text_area("중개자 코멘트 (선택)",
+                                     value=defaults["agent_comment"] or "",
+                                     placeholder="예: 햇빛이 잘 들고 조용한 주거 환경입니다.",
+                                     height=80)
+        interior_files = st.file_uploader(
+            "실내 사진 (선택, 최대 5장)",
+            type=["jpg", "jpeg", "png"],
+            accept_multiple_files=True,
+        )
 
         submitted = st.form_submit_button("✨ 릴스 생성", use_container_width=True, type="primary")
 
@@ -157,7 +167,16 @@ with right:
             st.stop()
         assert isinstance(address, str)
 
-        # --- 1. 주소 → 좌표 ---
+        slug = address[:10].replace(' ', '_')
+
+        # 실내 사진 저장
+        interior_paths: list[str] = []
+        if interior_files:
+            for i, f in enumerate(interior_files[:5]):
+                ipath = str(OUTPUT_DIR / f"interior_{slug}_{i}.jpg")
+                Path(ipath).write_bytes(f.read())
+                interior_paths.append(ipath)
+
         with st.status("📍 주소 좌표 변환 중...", expanded=True) as status:
             try:
                 lat, lng = geocode(address)
@@ -167,7 +186,6 @@ with right:
                 st.error(str(e))
                 st.stop()
 
-            # --- 2. 지하철역 ---
             status.update(label="🚇 주변 지하철역 검색 중...")
             try:
                 subway_list = find_nearby_subways(lat, lng)
@@ -177,9 +195,7 @@ with right:
                 st.warning(f"지하철 정보를 가져오지 못했습니다: {e}")
                 subway_list = []
 
-            # --- 3. 지도 이미지 ---
             status.update(label="🗺️ 지도 이미지 다운로드 중...")
-            slug = address[:10].replace(' ', '_')
             map_path = str(OUTPUT_DIR / f"map_{slug}.png")
             try:
                 download_static_map(lat, lng, subway_list, map_path)
@@ -188,7 +204,6 @@ with right:
                 st.warning(f"지도 이미지 실패: {e}")
                 map_path = None
 
-            # --- 4. 거리뷰 ---
             status.update(label="📸 거리뷰 스크린샷 촬영 중...")
             sv_path = str(OUTPUT_DIR / f"sv_{slug}.png")
             try:
@@ -198,8 +213,7 @@ with right:
                 st.warning(f"거리뷰 실패: {e}")
                 sv_path = None
 
-            # --- 5. AI 카피 ---
-            status.update(label="✍️ AI 광고 카피 생성 중...")
+            status.update(label="✍️ AI 대본 및 카피 생성 중...")
             try:
                 copy = generate_copy(
                     address=address,
@@ -210,19 +224,55 @@ with right:
                     options=list(options),
                     year_built=int(year_built),
                     subway_list=subway_list,
+                    loan_available=bool(loan_available),
+                    agent_comment=agent_comment or None,
+                    interior_count=len(interior_paths),
                 )
             except Exception as e:
                 status.update(label="❌ 카피 생성 실패", state="error")
                 st.error(str(e))
                 st.stop()
 
-            # --- 6. 영상 렌더링 ---
+            # TTS 생성
+            status.update(label="🔊 나레이션 음성 생성 중...")
+            narrations: list[str] = copy.get("narrations", [])
+            audio_paths: list[str | None] = []
+            for i, narr in enumerate(narrations):
+                try:
+                    apath = str(OUTPUT_DIR / f"narr_{slug}_{i}.mp3")
+                    text_to_speech(narr, apath)
+                    audio_paths.append(apath)
+                    st.write(f"• 나레이션 {i+1}: {narr}")
+                except Exception as e:
+                    st.warning(f"나레이션 {i+1} TTS 실패: {e}")
+                    audio_paths.append(None)
+
+            # 슬라이드 구성
             status.update(label="🎬 영상 렌더링 중...")
             video_path = str(OUTPUT_DIR / f"reels_{slug}.mp4")
+
+            def _narr(idx: int) -> str:
+                return narrations[idx] if idx < len(narrations) else ""
+
+            def _audio(idx: int) -> str | None:
+                return audio_paths[idx] if idx < len(audio_paths) else None
+
             try:
-                slides = [
-                    (slide_map(map_path) if map_path else slide_map(""), 2.0),
-                    (slide_street(sv_path) if sv_path else slide_street(""), 3.0),
+                n = 0  # narration index
+                slides_data: list[tuple] = [
+                    (slide_map(map_path or "", subtitle=_narr(n)), 2.0, _audio(n)),
+                ]
+                n += 1
+                slides_data.append(
+                    (slide_street(sv_path or "", subtitle=_narr(n)), 3.0, _audio(n))
+                )
+                n += 1
+                for ipath in interior_paths:
+                    slides_data.append(
+                        (slide_interior(ipath, subtitle=_narr(n)), 3.0, _audio(n))
+                    )
+                    n += 1
+                slides_data.append(
                     (slide_room_info(
                         address=address,
                         floor=int(floor),
@@ -231,17 +281,26 @@ with right:
                         monthly_rent=int(monthly_rent),
                         year_built=int(year_built),
                         options=list(options),
-                    ), 3.0),
-                    (slide_copy(copy["features"]), 4.0),
-                    (slide_cta(copy["cta"], copy["hashtags"]), 3.0),
-                ]
-                render_video(slides, video_path)
+                        loan_available=bool(loan_available),
+                        subtitle=_narr(n),
+                    ), 3.0, _audio(n))
+                )
+                n += 1
+                slides_data.append(
+                    (slide_copy(copy["features"], subtitle=_narr(n)), 4.0, _audio(n))
+                )
+                n += 1
+                slides_data.append(
+                    (slide_cta(copy["cta"], copy["hashtags"], subtitle=_narr(n)), 3.0, _audio(n))
+                )
+
+                render_video(slides_data, video_path)
                 st.write("영상 저장 완료")
             except Exception as e:
                 st.warning(f"영상 렌더링 실패: {e}")
                 video_path = None
 
-            # --- 7. DB 저장 ---
+            # DB 저장
             room = Room(
                 address=address,
                 floor=int(floor),
@@ -253,6 +312,9 @@ with right:
                 lat=lat,
                 lng=lng,
                 subway_info=subway_list,
+                loan_available=bool(loan_available),
+                agent_comment=agent_comment or None,
+                interior_paths=interior_paths,
             )
             room_id = db.insert_room(room)
             if video_path:

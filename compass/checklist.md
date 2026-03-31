@@ -63,12 +63,10 @@
 
 ---
 
-## 보류 중인 개선 계획 (plans/mossy-weaving-hammock.md)
-
 ### 영상 v2 — TTS + 자막 기반 개편
-- [ ] `services/ai/tts.py` — OpenAI TTS로 슬라이드별 나레이션 생성
-- [ ] `services/ai/copy_writer.py` — hook 제거, narrations 5+N개 추가
-- [ ] `services/video/templates.py` — 슬라이드 하단 자막 오버레이, slide_interior 추가
-- [ ] `services/video/renderer.py` — 슬라이드별 오디오 싱크 지원
-- [ ] `db/models.py` — loan_available, agent_comment, interior_paths 필드 추가
-- [ ] `app.py` — 실내사진 업로드, 전세대출가능 체크박스, 중개자코멘트 입력 추가
+- [x] `services/ai/tts.py` — OpenAI TTS로 슬라이드별 나레이션 생성
+- [x] `services/ai/copy_writer.py` — hook 제거, narrations 5+N개 추가
+- [x] `services/video/templates.py` — 슬라이드 하단 자막 오버레이, slide_interior 추가
+- [x] `services/video/renderer.py` — 슬라이드별 오디오 싱크 지원
+- [x] `db/models.py` — loan_available, agent_comment, interior_paths 필드 추가
+- [x] `app.py` — 실내사진 업로드, 전세대출가능 체크박스, 중개자코멘트 입력 추가

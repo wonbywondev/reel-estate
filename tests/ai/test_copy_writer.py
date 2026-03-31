@@ -2,30 +2,29 @@
 import json
 from unittest.mock import MagicMock, patch
 
-MOCK_RESPONSE = {
-    "hook": "월세 50만원에 이 퀄리티?",
-    "features": ["강남역 도보 5분", "풀옵션 완비", "신축급 깔끔함"],
-    "cta": "DM으로 문의하세요",
-    "hashtags": ["강남원룸", "역세권월세", "풀옵션", "강남부동산", "직장인추천"],
-}
-
 SUBWAY_LIST = [
     {"station": "강남역 2호선", "walk_min": 5, "walk_m": 400},
     {"station": "신논현역 9호선", "walk_min": 7, "walk_m": 600},
 ]
 
 
+def _mock_response(interior_count: int = 0) -> dict:
+    slide_count = 5 + interior_count
+    return {
+        "narrations": [f"나레이션 {i+1}" for i in range(slide_count)],
+        "features": ["강남역 도보 5분", "풀옵션 완비", "신축급 깔끔함"],
+        "cta": "DM으로 문의하세요",
+        "hashtags": ["강남원룸", "역세권월세", "풀옵션", "강남부동산", "직장인추천"],
+    }
+
+
 def _make_openai_mock(response_dict: dict):
-    """OpenAI client.chat.completions.create mock을 만든다."""
     message = MagicMock()
     message.content = json.dumps(response_dict, ensure_ascii=False)
-
     choice = MagicMock()
     choice.message = message
-
     completion = MagicMock()
     completion.choices = [choice]
-
     client = MagicMock()
     client.chat.completions.create.return_value = completion
     return client
@@ -33,7 +32,7 @@ def _make_openai_mock(response_dict: dict):
 
 class TestGenerateCopy:
     def test_returns_required_keys(self):
-        mock_client = _make_openai_mock(MOCK_RESPONSE)
+        mock_client = _make_openai_mock(_mock_response())
         with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
              patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
             from services.ai.copy_writer import generate_copy
@@ -46,13 +45,47 @@ class TestGenerateCopy:
                 subway_list=SUBWAY_LIST,
             )
 
-        assert "hook" in result
+        assert "narrations" in result
         assert "features" in result
         assert "cta" in result
         assert "hashtags" in result
+        assert "hook" not in result
+
+    def test_narrations_count_no_interior(self):
+        mock_client = _make_openai_mock(_mock_response(interior_count=0))
+        with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
+             patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
+            from services.ai.copy_writer import generate_copy
+            result = generate_copy(
+                address="서울시 강남구 역삼동 123",
+                floor=3, size_pyeong=10.0,
+                deposit=1000, monthly_rent=50,
+                options=[], year_built=2020,
+                subway_list=SUBWAY_LIST,
+                interior_count=0,
+            )
+
+        assert isinstance(result["narrations"], list)
+        assert len(result["narrations"]) == 5
+
+    def test_narrations_count_with_interior(self):
+        mock_client = _make_openai_mock(_mock_response(interior_count=3))
+        with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
+             patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
+            from services.ai.copy_writer import generate_copy
+            result = generate_copy(
+                address="서울시 강남구 역삼동 123",
+                floor=3, size_pyeong=10.0,
+                deposit=1000, monthly_rent=50,
+                options=[], year_built=2020,
+                subway_list=SUBWAY_LIST,
+                interior_count=3,
+            )
+
+        assert len(result["narrations"]) == 8
 
     def test_features_is_list_of_three(self):
-        mock_client = _make_openai_mock(MOCK_RESPONSE)
+        mock_client = _make_openai_mock(_mock_response())
         with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
              patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
             from services.ai.copy_writer import generate_copy
@@ -67,8 +100,44 @@ class TestGenerateCopy:
         assert isinstance(result["features"], list)
         assert len(result["features"]) == 3
 
+    def test_loan_available_in_prompt(self):
+        mock_client = _make_openai_mock(_mock_response())
+        with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
+             patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
+            from services.ai.copy_writer import generate_copy
+            generate_copy(
+                address="서울시 강남구 역삼동 123",
+                floor=3, size_pyeong=10.0,
+                deposit=1000, monthly_rent=50,
+                options=[], year_built=2020,
+                subway_list=[],
+                loan_available=True,
+            )
+
+        call_messages = mock_client.chat.completions.create.call_args[1]["messages"]
+        user_content = next(m["content"] for m in call_messages if m["role"] == "user")
+        assert "가능" in user_content
+
+    def test_agent_comment_in_prompt(self):
+        mock_client = _make_openai_mock(_mock_response())
+        with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
+             patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
+            from services.ai.copy_writer import generate_copy
+            generate_copy(
+                address="서울시 강남구 역삼동 123",
+                floor=3, size_pyeong=10.0,
+                deposit=1000, monthly_rent=50,
+                options=[], year_built=2020,
+                subway_list=[],
+                agent_comment="햇빛이 잘 들어요",
+            )
+
+        call_messages = mock_client.chat.completions.create.call_args[1]["messages"]
+        user_content = next(m["content"] for m in call_messages if m["role"] == "user")
+        assert "햇빛이 잘 들어요" in user_content
+
     def test_prompt_contains_address_and_price(self):
-        mock_client = _make_openai_mock(MOCK_RESPONSE)
+        mock_client = _make_openai_mock(_mock_response())
         with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
              patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
             from services.ai.copy_writer import generate_copy
@@ -87,7 +156,7 @@ class TestGenerateCopy:
         assert "50만원" in user_content
 
     def test_prompt_contains_subway_info(self):
-        mock_client = _make_openai_mock(MOCK_RESPONSE)
+        mock_client = _make_openai_mock(_mock_response())
         with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
              patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
             from services.ai.copy_writer import generate_copy
@@ -105,7 +174,7 @@ class TestGenerateCopy:
         assert "5분" in user_content
 
     def test_uses_json_response_format(self):
-        mock_client = _make_openai_mock(MOCK_RESPONSE)
+        mock_client = _make_openai_mock(_mock_response())
         with patch("services.ai.copy_writer.OpenAI", return_value=mock_client), \
              patch.dict("os.environ", {"OPENAI_API_KEY": "test"}):
             from services.ai.copy_writer import generate_copy

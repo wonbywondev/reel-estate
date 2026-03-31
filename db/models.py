@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 
@@ -17,3 +17,6 @@ class Room:
     subway_info: Optional[list[dict]] = None  # [{"station": "강남역", "walk_min": 5, ...}]
     video_path: Optional[str] = None
     created_at: Optional[str] = None
+    loan_available: bool = False
+    agent_comment: Optional[str] = None
+    interior_paths: list[str] = field(default_factory=list)
