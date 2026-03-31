@@ -211,3 +211,6 @@ __marimo__/
 
 # Generated video output
 output/
+
+# Local user database
+*.db
