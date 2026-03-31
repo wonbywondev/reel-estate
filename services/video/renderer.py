@@ -2,6 +2,7 @@
 import numpy as np
 from pathlib import Path
 from PIL import Image
+from typing import cast
 from moviepy import ImageClip, AudioFileClip, concatenate_videoclips, concatenate_audioclips
 from moviepy.video.VideoClip import VideoClip
 
@@ -42,7 +43,7 @@ def render_video(
 
         clips.append(ImageClip(arr, duration=duration))
 
-    video: VideoClip = concatenate_videoclips(clips, method="compose")  # type: ignore[assignment]
+    video = cast(VideoClip, concatenate_videoclips(clips, method="compose"))
 
     if has_audio:
         # None 슬라이드는 해당 duration만큼 무음으로 채움
@@ -61,7 +62,7 @@ def render_video(
                 final_audios.append(silence)
 
         combined_audio = concatenate_audioclips(final_audios)  # type: ignore[arg-type]
-        video = video.with_audio(combined_audio)
+        video = cast(VideoClip, video.with_audio(combined_audio))
 
     video.write_videofile(
         save_path,
