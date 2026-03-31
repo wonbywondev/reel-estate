@@ -8,7 +8,11 @@ from PIL import Image, ImageDraw, ImageFont
 # ---------------------------------------------------------------------------
 
 W, H = 1080, 1920
-FONT_PATH = Path("assets/fonts/NanumGothic.ttf")
+FONT_PATH = Path("assets/fonts/에이투지체-7Bold.ttf")
+FONT_PATH_FALLBACK = Path("assets/fonts/NanumGothic.ttf")
+
+# 인스타그램 릴스 dead zone (하단 버튼/텍스트 영역)
+REEL_DEAD_BOTTOM = 380  # 하단 좋아요·댓글·공유 버튼 영역
 
 # 컬러 팔레트
 BG_DARK = (18, 18, 18)
@@ -18,10 +22,12 @@ GRAY = (160, 160, 160)
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    try:
-        return ImageFont.truetype(str(FONT_PATH), size)
-    except (IOError, OSError):
-        return ImageFont.load_default()
+    for path in (FONT_PATH, FONT_PATH_FALLBACK):
+        try:
+            return ImageFont.truetype(str(path), size)
+        except (IOError, OSError):
+            continue
+    return ImageFont.load_default()
 
 
 def _base(bg_color: tuple = BG_DARK) -> Image.Image:
@@ -55,28 +61,23 @@ def _fit_cover(src: Image.Image, tw: int, th: int) -> Image.Image:
 # ---------------------------------------------------------------------------
 
 def _draw_subtitle(img: Image.Image, text: str) -> Image.Image:
-    """슬라이드 하단에 반투명 바 + 자막 텍스트를 오버레이한다."""
+    """슬라이드 하단 safe zone에 반투명 바 + 자막 텍스트를 오버레이한다.
+
+    인스타그램 릴스 하단 dead zone(버튼 영역) 위에 배치.
+    """
     if not text:
         return img
 
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    bar_h = 180
-    bar = Image.new("RGBA", (W, bar_h), (0, 0, 0, 180))
-    overlay.paste(bar, (0, H - bar_h))
+    font = _font(62)
+    draw_tmp = ImageDraw.Draw(img)
 
-    img_rgba = img.convert("RGBA")
-    img_rgba = Image.alpha_composite(img_rgba, overlay)
-    img = img_rgba.convert("RGB")
-
-    draw = ImageDraw.Draw(img)
-    font = _font(52)
     # 줄바꿈 처리
     max_w = W - 80
     lines: list[str] = []
     current = ""
     for ch in text:
         test = current + ch
-        bbox = draw.textbbox((0, 0), test, font=font)
+        bbox = draw_tmp.textbbox((0, 0), test, font=font)
         if bbox[2] - bbox[0] > max_w and current:
             lines.append(current)
             current = ch
@@ -85,9 +86,22 @@ def _draw_subtitle(img: Image.Image, text: str) -> Image.Image:
     if current:
         lines.append(current)
 
-    line_h = int(draw.textbbox((0, 0), "가", font=font)[3]) + 8
+    line_h = int(draw_tmp.textbbox((0, 0), "가", font=font)[3]) + 12
     total_h = len(lines) * line_h
-    y = H - bar_h + (bar_h - total_h) // 2
+    bar_h = total_h + 60
+    # dead zone 위에 배치
+    bar_top = H - REEL_DEAD_BOTTOM - bar_h
+
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    bar = Image.new("RGBA", (W, bar_h), (0, 0, 0, 190))
+    overlay.paste(bar, (0, bar_top))
+
+    img_rgba = img.convert("RGBA")
+    img_rgba = Image.alpha_composite(img_rgba, overlay)
+    img = img_rgba.convert("RGB")
+
+    draw = ImageDraw.Draw(img)
+    y = bar_top + (bar_h - total_h) // 2
     for line in lines:
         _draw_text_centered(draw, y, line, font, WHITE)
         y += line_h

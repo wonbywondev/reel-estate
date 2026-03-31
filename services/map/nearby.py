@@ -16,7 +16,7 @@ SHOP_CATEGORIES: list[tuple[list[str], int, int]] = [
 ]
 
 
-def find_nearby_shops(lat: float, lng: float) -> list[dict]:
+def find_nearby_shops(lat: float, lng: float, region_hint: str = "") -> list[dict]:
     """카테고리별 반경 내 마트/시장/편의점 목록을 반환한다.
 
     Returns:
@@ -35,10 +35,11 @@ def find_nearby_shops(lat: float, lng: float) -> list[dict]:
         candidates: list[dict] = []
 
         for query in queries:
+            full_query = f"{region_hint} {query}".strip() if region_hint else query
             try:
                 resp = requests.get(
                     SEARCH_URL,
-                    params={"query": query, "display": 10, "sort": "random"},
+                    params={"query": full_query, "display": 10, "sort": "random"},
                     headers=headers,
                     timeout=5,
                 )

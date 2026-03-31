@@ -45,8 +45,7 @@
 ## Phase 2.5 — 영상 v2/v3 개편 ✅ 완료
 
 ### 영상 v2 — TTS + 자막
-- OpenAI TTS tts-1 → 403 권한 없음으로 오디오 미생성 (자막은 정상 표시)
-- narrations 기반 슬라이드별 자막 오버레이 구현 완료
+- narrations 기반 슬라이드별 자막 오버레이 구현
 
 ### 영상 v3 — 슬라이드 구성 개편
 - 첫 슬라이드: 동네 이름 (썸네일)
@@ -55,20 +54,24 @@
 
 ---
 
-## Phase 3 — TTS 서버 (다음 구현)
+## Phase 3 — TTS + 영상 퀄리티 개선 ✅ 완료
 
-### 3-1. `tts_server/` 구현
-- `model.py` — facebook/mms-tts-kor 로드 (CPU, HuggingFace transformers)
-- `main.py` — FastAPI `POST /synthesize` → MP3 bytes 반환
-- 의존성: `fastapi`, `uvicorn`, `transformers`, `torch`, `scipy`
+### 3-1. TTS 서버 ✅
+- edge-tts (Microsoft Azure) 기반 `tts_server/`
+- `POST /synthesize` → MP3 bytes 반환
+- 기본 음성: `ko-KR-SunHiNeural`, `TTS_VOICE` 환경변수로 변경 가능
 
-### 3-2. `services/ai/tts.py` 수정
-- OpenAI 호출 → `http://localhost:8000/synthesize` POST로 교체
-- 인터페이스 동일 유지: `text_to_speech(text, save_path) -> str`
+### 3-2. 편의시설 검색 개선 ✅
+- `find_nearby_shops(lat, lng, region_hint)` — 지역명 prefix로 검색 정확도 향상
 
-### 3-3. 서버 실행 환경
-- `uv run uvicorn tts_server.main:app` 별도 터미널
-- 나중에 systemd/pm2 등으로 데몬화
+### 3-3. 슬라이드 디자인 개선 ✅
+- 폰트: 에이투지체-7Bold (fallback: NanumGothic)
+- 자막 위치: 인스타 dead zone(하단 380px) 위
+- 자막 크기: 62px
+
+### 3-4. 개발 도구 ✅
+- `tests/video/gen_slides.py` — TTS 없이 슬라이드 이미지+대본만 빠르게 생성
+  - `output/{slug}_{timestamp}/` 폴더에 슬라이드 PNG + script.txt + meta.json 저장
 
 ---
 
@@ -96,3 +99,4 @@
 
 - 대본 템플릿 적용 (사용자가 별도 제공 예정)
 - BGM 파일 assets/bgm/ 배치
+- app.py에도 region_hint 전달 반영

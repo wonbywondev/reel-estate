@@ -15,12 +15,12 @@
 |--------|------|------|
 | UI | Streamlit | Python 기반, 배포 간단 |
 | 지도 데이터 | 네이버 지도 API | Static Map, 장소 검색, 도보 거리 |
-| 편의시설 검색 | 네이버 Local Search API | 대형마트/다이소/편의점 반경 검색 |
+| 편의시설 검색 | 네이버 Local Search API | 대형마트/다이소/편의점 반경 검색, region_hint로 지역 필터 |
 | 스트리트뷰 | Playwright | 실패 시 위성지도 fallback |
 | AI 카피 | OpenAI gpt-5-mini | 광고 카피 + narrations 생성, 허위·과장 광고 금지 |
-| TTS | (예정) HuggingFace mms-tts-kor | CPU 자체 호스팅 FastAPI 서버, 현재 미구현 |
+| TTS | edge-tts (Microsoft Azure) | ko-KR-SunHiNeural, FastAPI 서버 래핑, TTS_VOICE 환경변수로 변경 가능 |
 | 영상 생성 | MoviePy / FFmpeg | 슬라이드쇼, 9:16, ~22초 (슬라이드 수 가변) |
-| DB | SQLite → Supabase | 로컬 시작, 클라우드 확장 예정 |
+| DB | SQLite (로컬) | realestate.db, 사용자 로컬에 저장 |
 | 업로드 | Instagram Graph API | MVP는 다운로드만, 추후 구현 |
 | 워크플로우 | (추후) n8n | 모듈 경계가 n8n 노드 래핑에 적합하게 설계 |
 
@@ -31,48 +31,46 @@
 ```
 Gen_for_SmallBusiness/
 ├── app.py                        # Streamlit 진입점
-├── COMPASS/                      # 설계 문서
-│   ├── context.md
-│   ├── plan.md
-│   └── checklist.md
+├── docs/
+│   └── compass/                  # 설계 문서 (context, plan, checklist)
 ├── services/
 │   ├── map/
-│   │   ├── __init__.py
 │   │   ├── geocoding.py          # 주소 → 좌표 변환
 │   │   ├── nearby.py             # 근처 마트/다이소/편의점 (네이버 Local Search API)
+│   │   │                         # find_nearby_shops(lat, lng, region_hint="")
 │   │   ├── subway/               # 근처 지하철역 + 도보 거리
-│   │   │   ├── __init__.py
 │   │   │   ├── finder.py         # Directions API로 거리 계산, 호선별 최대 3개 반환
 │   │   │   └── station_db.py     # 공공데이터 CSV 로드 + Haversine 반경 필터
 │   │   └── static_map.py         # Static Map 이미지 다운로드
 │   │                             # download_static_map(): level=15, 지하철 마커+오버레이
 │   │                             # download_static_map_wide(): level=12, 매물 마커만
 │   ├── street/
-│   │   ├── __init__.py
 │   │   └── playwright_shot.py    # 스트리트뷰 스크린샷 (실패 시 위성지도)
 │   ├── ai/
-│   │   ├── __init__.py
 │   │   ├── copy_writer.py        # gpt-5-mini 광고 카피 + narrations 생성
-│   │   └── tts.py                # TTS 인터페이스 (현재 OpenAI — 403 권한 없음)
+│   │   └── tts.py                # TTS 서버 HTTP 호출 인터페이스
 │   ├── video/
-│   │   ├── __init__.py
 │   │   ├── renderer.py           # MoviePy 영상 렌더링 (슬라이드별 오디오 싱크)
 │   │   └── templates.py          # 슬라이드 레이아웃 정의
+│   │                             # 폰트: 에이투지체-7Bold.ttf (fallback: NanumGothic)
+│   │                             # 자막: 인스타 dead zone 위 배치 (하단 380px 회피)
 │   └── upload/                   # 자리 예약 — MVP는 미구현
-│       ├── __init__.py
 │       └── instagram.py          # TODO: Instagram Graph API
-├── tts_server/                   # (예정) HuggingFace TTS 자체 호스팅 서버
+├── tts_server/
 │   ├── main.py                   # FastAPI POST /synthesize
-│   └── model.py                  # facebook/mms-tts-kor 로드 + 추론
+│   └── model.py                  # edge-tts 기반 한국어 TTS
 ├── db/
 │   ├── database.py               # SQLite 연결, CRUD
 │   └── models.py                 # 방 데이터 스키마
 ├── assets/
-│   ├── fonts/                    # 한글 자막용 폰트
+│   ├── fonts/                    # 에이투지체 (1Thin~9Black), NanumGothic
 │   ├── bgm/                      # 저작권 없는 배경음악 (미배치)
-│   └── data/
-│       └── subway/               # 공공데이터 CSV (서울 1~9호선, 인천, 부산)
-├── output/                       # 생성된 영상 저장
+│   └── data/subway/              # 공공데이터 CSV (서울 1~9호선, 인천, 부산)
+├── tests/
+│   └── video/
+│       └── gen_slides.py         # 슬라이드 이미지 + 대본 생성 테스트 스크립트
+│                                 # (TTS 없이 이미지만, output/{slug}_{timestamp}/ 저장)
+├── output/                       # 생성된 영상/이미지 저장 (로컬, .gitignore)
 └── .env                          # API 키
 ```
 
@@ -83,21 +81,21 @@ Gen_for_SmallBusiness/
 ```sql
 CREATE TABLE rooms (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    address         TEXT NOT NULL,       -- 도로명 주소
-    floor           INTEGER,             -- 층수
-    size_pyeong     REAL,                -- 평수
-    deposit         INTEGER,             -- 보증금 (만원)
-    monthly_rent    INTEGER,             -- 월세 (만원, 전세면 0)
-    options         TEXT,                -- JSON 배열 ["에어컨", "세탁기", ...]
-    year_built      INTEGER,             -- 준공 연도
-    lat             REAL,                -- 위도 (캐시)
-    lng             REAL,                -- 경도 (캐시)
+    address         TEXT NOT NULL,
+    floor           INTEGER,
+    size_pyeong     REAL,
+    deposit         INTEGER,
+    monthly_rent    INTEGER,
+    options         TEXT,                -- JSON 배열 ["에어컨", ...]
+    year_built      INTEGER,
+    lat             REAL,
+    lng             REAL,
     subway_info     TEXT,                -- JSON [{station, walk_min, walk_m, lat, lng}, ...]
-    video_path      TEXT,                -- 생성된 영상 로컬 경로
-    loan_available  INTEGER DEFAULT 0,   -- 전세 대출 가능 여부
-    agent_comment   TEXT,                -- 중개자 코멘트 (AI 대본 참고용)
-    interior_paths  TEXT,                -- JSON 배열 [경로, ...] 실내 사진
-    shops_info      TEXT,                -- JSON [{name, category, distance}, ...] 편의시설
+    video_path      TEXT,
+    loan_available  INTEGER DEFAULT 0,
+    agent_comment   TEXT,
+    interior_paths  TEXT,                -- JSON 배열 [경로, ...]
+    shops_info      TEXT,                -- JSON [{name, category, distance}, ...]
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
@@ -118,7 +116,7 @@ CREATE TABLE rooms (
 | N+3 | `slide_copy` | AI 특징 3가지 | 4초 |
 | N+4 | `slide_cta` | CTA + 해시태그 | 3초 |
 
-각 슬라이드에 하단 자막 오버레이 (AI narration 기반, TTS 구현 시 오디오 연동).
+각 슬라이드에 하단 자막 오버레이 (AI narration 기반, edge-tts 오디오 연동).
 
 ---
 
@@ -126,31 +124,33 @@ CREATE TABLE rooms (
 
 ### 네이버 지도 API
 - Static Map: 좌표 기반 이미지 다운로드, level=15(좁은)/12(넓은) 두 장 생성
-- 지하철역 검색: 공공데이터 CSV 로컬 DB (서울 1~9호선, 인천, 부산) + Haversine 필터 → Directions API 실거리 계산
+- 지하철역 검색: 공공데이터 CSV 로컬 DB + Haversine 필터 → Directions API 실거리 계산
   - 가장 가까운 역 거리 + 500m 이내, 호선별 1개, 최대 3개 반환
-- 편의시설 검색: 네이버 Local Search API (openapi.naver.com) — 지도 API와 별도 앱/키
+- 편의시설 검색: 네이버 Local Search API — 지도 API와 별도 앱/키
+  - 쿼리에 region_hint(예: "인천 연수구") prefix를 붙여 지역 필터링
   - 대형마트/다이소 반경 10km 최대 5개, 편의점 반경 1km 최대 1개
 - 스트리트뷰: Playwright → pano_id 추출 → 전체화면 캡처, JS로 dialog 숨김 처리
 
 ### OpenAI API
-- 현재 프로젝트에서 사용 가능한 모델: gpt-5-mini, gpt-5-nano, gpt-image-1-mini, text-embedding-3-small
-- tts-1 접근 불가 (403) → HuggingFace TTS 서버로 대체 예정
+- 사용 가능한 모델: gpt-5-mini, gpt-5-nano, gpt-image-1-mini, text-embedding-3-small
+- tts-1 접근 불가 (403) → edge-tts로 전환
 - temperature 파라미터 미지원 (gpt-5-mini)
 
-### TTS 계획
-- facebook/mms-tts-kor (HuggingFace) — CPU 환경, GPU 없음
-- FastAPI 서버 (`tts_server/`) 별도 구동 → `POST /synthesize` → MP3 bytes 반환
-- `services/ai/tts.py` 인터페이스는 동일하게 유지 (save_path 반환)
+### TTS
+- edge-tts (Microsoft Azure, 인터넷 연결 필요)
+- 기본 음성: `ko-KR-SunHiNeural` (여성), `TTS_VOICE` 환경변수로 변경
+- FastAPI 서버 (`tts_server/`) — `POST /synthesize` → MP3 bytes 반환
+- 모델 로드 없이 즉시 시작, torch/transformers 의존성 없음
+
+### 슬라이드 디자인
+- 폰트: 에이투지체-7Bold (fallback: NanumGothic)
+- 자막 위치: 인스타그램 릴스 dead zone(하단 380px) 위에 배치
+- 자막 크기: 62px
 
 ### Instagram Graph API (추후)
 - 비즈니스/크리에이터 계정 + Facebook 앱 심사 필요
 - 영상 업로드는 공개 URL 방식 → S3/Cloudflare R2 임시 스토리지 필요
 - 위치 태그 2개: 공인중개사 사무소 + 매물 건물
-- MVP는 Streamlit 다운로드 버튼으로 대체
-
-### 라이선스
-- Source Available License (wonbywondev 단독 상업적 이용)
-- 원본: hobi2k 작성, wonbywondev가 수정·유지
 
 ### n8n 확장
 - 각 services/ 폴더가 독립 모듈로 설계됨 → HTTP Request 노드 또는 Python 실행 노드로 래핑 용이
