@@ -45,6 +45,7 @@ class Database:
             ("loan_available", "INTEGER DEFAULT 0"),
             ("agent_comment", "TEXT"),
             ("interior_paths", "TEXT"),
+            ("shops_info", "TEXT"),
         ]:
             try:
                 self._conn.execute(f"ALTER TABLE rooms ADD COLUMN {col} {definition}")
@@ -61,8 +62,8 @@ class Database:
             """INSERT INTO rooms
                (address, floor, size_pyeong, deposit, monthly_rent, options,
                 year_built, lat, lng, subway_info, video_path,
-                loan_available, agent_comment, interior_paths)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                loan_available, agent_comment, interior_paths, shops_info)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 room.address, room.floor, room.size_pyeong,
                 room.deposit, room.monthly_rent,
@@ -73,6 +74,7 @@ class Database:
                 int(room.loan_available),
                 room.agent_comment,
                 json.dumps(room.interior_paths, ensure_ascii=False),
+                json.dumps(room.shops_info, ensure_ascii=False),
             ),
         )
         self.conn.commit()
@@ -128,4 +130,5 @@ class Database:
             loan_available=bool(row["loan_available"]) if "loan_available" in keys else False,
             agent_comment=row["agent_comment"] if "agent_comment" in keys else None,
             interior_paths=json.loads(row["interior_paths"]) if "interior_paths" in keys and row["interior_paths"] else [],
+            shops_info=json.loads(row["shops_info"]) if "shops_info" in keys and row["shops_info"] else [],
         )

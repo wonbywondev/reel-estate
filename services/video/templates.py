@@ -96,6 +96,25 @@ def _draw_subtitle(img: Image.Image, text: str) -> Image.Image:
 
 
 # ---------------------------------------------------------------------------
+# 슬라이드 0: 동네 제목 (썸네일 겸용)
+# ---------------------------------------------------------------------------
+
+def slide_title(neighborhood: str, subtitle: str = "") -> Image.Image:
+    """동네 이름을 중앙에 크게 표시한다. 썸네일 겸용."""
+    img = _base()
+    draw = ImageDraw.Draw(img)
+
+    f_main = _font(90)
+    f_sub = _font(44)
+
+    # 동네 이름 상단 1/3 지점
+    _draw_text_centered(draw, H // 3 - 60, neighborhood, f_main, YELLOW)
+    _draw_text_centered(draw, H // 3 + 80, "매물 소개", f_sub, GRAY)
+
+    return _draw_subtitle(img, subtitle)
+
+
+# ---------------------------------------------------------------------------
 # 슬라이드 1: Static Map
 # ---------------------------------------------------------------------------
 
@@ -212,6 +231,44 @@ def slide_room_info(
         row_x += tw + tag_gap
 
     _draw_text_centered(draw, H - 140, address, _font(32), GRAY)
+
+    return _draw_subtitle(img, subtitle)
+
+
+# ---------------------------------------------------------------------------
+# 슬라이드: 근처 편의시설 (마트/시장)
+# ---------------------------------------------------------------------------
+
+def slide_nearby_shops(shops: list[dict], subtitle: str = "") -> Image.Image:
+    """근처 마트/시장 목록을 표시한다.
+
+    Args:
+        shops: [{"name": str, "category": str, "distance": int}, ...]
+    """
+    img = _base()
+    draw = ImageDraw.Draw(img)
+
+    f_header = _font(60)
+    f_item = _font(52)
+    f_dist = _font(38)
+
+    y = 400
+    _draw_text_centered(draw, y, "🛒 근처 편의시설", f_header, YELLOW)
+    y += 120
+
+    draw.line([(80, y), (W - 80, y)], fill=GRAY, width=2)
+    y += 50
+
+    if shops:
+        for shop in shops[:5]:
+            name = shop["name"]
+            dist = shop["distance"]
+            _draw_text_centered(draw, y, name, f_item, WHITE)
+            y += 70
+            _draw_text_centered(draw, y, f"{dist}m", f_dist, GRAY)
+            y += 60
+    else:
+        _draw_text_centered(draw, y, "정보 없음", f_item, GRAY)
 
     return _draw_subtitle(img, subtitle)
 

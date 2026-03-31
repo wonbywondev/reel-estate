@@ -7,13 +7,14 @@ from db.database import Database
 from db.models import Room
 from services.map.geocoding import geocode
 from services.map.subway import find_nearby_subways
-from services.map.static_map import download_static_map
+from services.map.static_map import download_static_map, download_static_map_wide
+from services.map.nearby import find_nearby_shops
 from services.street.playwright_shot import take_street_view
 from services.ai.copy_writer import generate_copy
 from services.ai.tts import text_to_speech
 from services.video.templates import (
-    slide_map, slide_street, slide_interior,
-    slide_room_info, slide_copy, slide_cta,
+    slide_title, slide_map, slide_street, slide_interior,
+    slide_room_info, slide_nearby_shops, slide_copy, slide_cta,
 )
 from services.video.renderer import render_video
 
@@ -196,13 +197,31 @@ with right:
                 subway_list = []
 
             status.update(label="🗺️ 지도 이미지 다운로드 중...")
+            wide_map_path = str(OUTPUT_DIR / f"map_wide_{slug}.png")
+            try:
+                download_static_map_wide(lat, lng, wide_map_path)
+                st.write("넓은 지도 이미지 저장 완료")
+            except Exception as e:
+                st.warning(f"넓은 지도 이미지 실패: {e}")
+                wide_map_path = None
+
             map_path = str(OUTPUT_DIR / f"map_{slug}.png")
             try:
                 download_static_map(lat, lng, subway_list, map_path)
-                st.write("지도 이미지 저장 완료")
+                st.write("지역 지도 이미지 저장 완료")
             except Exception as e:
                 st.warning(f"지도 이미지 실패: {e}")
                 map_path = None
+
+            status.update(label="🛒 근처 편의시설 검색 중...")
+            try:
+                shops_list = find_nearby_shops(lat, lng)
+                for s in shops_list:
+                    st.write(f"• {s['name']} ({s['distance']}m)")
+            except Exception as e:
+                st.warning(f"편의시설 정보를 가져오지 못했습니다: {e}")
+                st.exception(e)
+                shops_list = []
 
             status.update(label="📸 거리뷰 스크린샷 촬영 중...")
             sv_path = str(OUTPUT_DIR / f"sv_{slug}.png")
@@ -258,10 +277,22 @@ with right:
                 return audio_paths[idx] if idx < len(audio_paths) else None
 
             try:
+                # 동네 이름 추출: "서울시 강남구 역삼동 123" → "강남구 역삼동"
+                parts = address.split()
+                neighborhood = " ".join(parts[1:3]) if len(parts) >= 3 else parts[0]
+
                 n = 0  # narration index
                 slides_data: list[tuple] = [
-                    (slide_map(map_path or "", subtitle=_narr(n)), 2.0, _audio(n)),
+                    (slide_title(neighborhood, subtitle=_narr(n)), 2.0, _audio(n)),
                 ]
+                n += 1
+                slides_data.append(
+                    (slide_map(wide_map_path or "", subtitle=_narr(n)), 2.0, _audio(n))
+                )
+                n += 1
+                slides_data.append(
+                    (slide_map(map_path or "", subtitle=_narr(n)), 2.0, _audio(n))
+                )
                 n += 1
                 slides_data.append(
                     (slide_street(sv_path or "", subtitle=_narr(n)), 3.0, _audio(n))
@@ -284,6 +315,10 @@ with right:
                         loan_available=bool(loan_available),
                         subtitle=_narr(n),
                     ), 3.0, _audio(n))
+                )
+                n += 1
+                slides_data.append(
+                    (slide_nearby_shops(shops_list, subtitle=_narr(n)), 3.0, _audio(n))
                 )
                 n += 1
                 slides_data.append(
@@ -315,6 +350,7 @@ with right:
                 loan_available=bool(loan_available),
                 agent_comment=agent_comment or None,
                 interior_paths=interior_paths,
+                shops_info=shops_list,
             )
             room_id = db.insert_room(room)
             if video_path:

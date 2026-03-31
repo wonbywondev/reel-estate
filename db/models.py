@@ -20,3 +20,4 @@ class Room:
     loan_available: bool = False
     agent_comment: Optional[str] = None
     interior_paths: list[str] = field(default_factory=list)
+    shops_info: list[dict] = field(default_factory=list)
