@@ -5,48 +5,11 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv
 
+from services.ai.prompts import SYSTEM_PROMPT, COPY_PROMPT
+
 load_dotenv()
 
 MODEL = "gpt-5-mini"
-
-SYSTEM_PROMPT = """당신은 인스타그램 릴스용 부동산 광고 카피라이터입니다.
-공인중개사가 제공한 매물 정보를 바탕으로 20~30대 직장인을 타겟으로 한 짧고 임팩트 있는 카피와 나레이션 대본을 작성합니다.
-반드시 JSON 형식으로만 응답하세요.
-
-[중요] 허위·과장 광고 금지:
-- 제공된 매물 정보에 없는 사실을 지어내거나 추가하지 마세요.
-- "최고", "최저가", "유일한" 등 객관적 근거 없는 최상급 표현을 사용하지 마세요.
-- 실제보다 좋게 보이도록 과장하지 마세요. 있는 사실을 매력적으로 전달하는 것에 집중하세요."""
-
-COPY_PROMPT = """다음 매물 정보로 인스타그램 릴스 광고 카피와 슬라이드별 나레이션 대본을 작성해주세요.
-
-매물 정보:
-- 주소: {address}
-- 가격: {price_str}
-- 평수: {size_pyeong}평
-- 층수: {floor}층
-- 준공연도: {year_built}년
-- 전세 대출 가능: {loan_str}
-- 옵션: {options_str}
-- 가까운 지하철: {subway_str}
-- 중개자 코멘트: {comment_str}
-- 실내 사진 수: {interior_count}장
-
-슬라이드 구성 ({slide_count}개):
-{slide_list}
-
-다음 JSON 형식으로만 응답하세요:
-{{
-  "narrations": ["슬라이드1 나레이션", "슬라이드2 나레이션", ...],
-  "features": ["특징 1 (15자 이내)", "특징 2 (15자 이내)", "특징 3 (15자 이내)"],
-  "cta": "행동 유도 문구 (15자 이내, 예: DM 주세요 / 지금 문의하세요)",
-  "hashtags": ["해시태그1", "해시태그2", "해시태그3", "해시태그4", "해시태그5"]
-}}
-
-나레이션 작성 규칙:
-- 각 나레이션은 20~35자 이내의 자연스러운 구어체
-- TTS로 읽힐 문장이므로 특수기호 사용 금지
-- 슬라이드 내용에 맞는 자연스러운 흐름"""
 
 
 def generate_copy(
