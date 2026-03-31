@@ -10,6 +10,10 @@ from services.map.subway import find_nearby_subways
 from services.map.static_map import download_static_map
 from services.street.playwright_shot import take_street_view
 from services.ai.copy_writer import generate_copy
+from services.video.templates import (
+    slide_map, slide_street, slide_room_info, slide_copy, slide_cta,
+)
+from services.video.renderer import render_video
 
 # ---------------------------------------------------------------------------
 # 상수
@@ -135,7 +139,33 @@ with right:
                 st.error(str(e))
                 st.stop()
 
-            # --- 6. DB 저장 ---
+            # --- 6. 영상 렌더링 ---
+            status.update(label="🎬 영상 렌더링 중...")
+            slug = address[:10].replace(' ', '_')
+            video_path = str(OUTPUT_DIR / f"reels_{slug}.mp4")
+            try:
+                slides = [
+                    (slide_map(map_path) if map_path else slide_map(""), 2.0),
+                    (slide_street(sv_path) if sv_path else slide_street(""), 3.0),
+                    (slide_room_info(
+                        address=address,
+                        floor=int(floor),
+                        size_pyeong=float(size_pyeong),
+                        deposit=int(deposit),
+                        monthly_rent=int(monthly_rent),
+                        year_built=int(year_built),
+                        options=list(options),
+                    ), 3.0),
+                    (slide_copy(copy["hook"], copy["features"]), 4.0),
+                    (slide_cta(copy["cta"], copy["hashtags"]), 3.0),
+                ]
+                render_video(slides, video_path)
+                st.write("영상 저장 완료")
+            except Exception as e:
+                st.warning(f"영상 렌더링 실패: {e}")
+                video_path = None
+
+            # --- 7. DB 저장 ---
             room = Room(
                 address=address,
                 floor=int(floor),
@@ -155,15 +185,31 @@ with right:
         # --- 결과 표시 ---
         st.divider()
 
-        if map_path and Path(map_path).exists():
-            st.image(map_path, caption="지도", use_container_width=True)
+        # 영상
+        if video_path and Path(video_path).exists():
+            st.markdown("### 🎬 생성된 릴스")
+            st.video(video_path)
+            with open(video_path, "rb") as vf:
+                st.download_button(
+                    label="⬇️ MP4 다운로드",
+                    data=vf,
+                    file_name=Path(video_path).name,
+                    mime="video/mp4",
+                    use_container_width=True,
+                )
 
-        if sv_path and Path(sv_path).exists():
-            st.image(sv_path, caption="거리뷰", use_container_width=True)
+        st.divider()
+
+        col_map, col_sv = st.columns(2)
+        with col_map:
+            if map_path and Path(map_path).exists():
+                st.image(map_path, caption="지도", use_container_width=True)
+        with col_sv:
+            if sv_path and Path(sv_path).exists():
+                st.image(sv_path, caption="거리뷰", use_container_width=True)
 
         st.divider()
         st.markdown("### 📝 광고 카피")
-        st.markdown(f"**후크:** {copy['hook']}")
         for f in copy["features"]:
             st.markdown(f"- {f}")
         st.markdown(f"**CTA:** {copy['cta']}")
