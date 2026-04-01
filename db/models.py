@@ -20,4 +20,7 @@ class Room:
     loan_available: bool = False
     agent_comment: Optional[str] = None
     interior_paths: list[str] = field(default_factory=list)
+    interior_labels: list[str] = field(default_factory=list)
     shops_info: list[dict] = field(default_factory=list)
+    facing: Optional[str] = None       # 방향 (예: 남향)
+    room_config: Optional[str] = None  # 방 구성 (예: 방2 거실1 화장실1)

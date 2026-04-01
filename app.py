@@ -14,7 +14,8 @@ from services.ai.copy_writer import generate_copy
 from services.ai.tts import text_to_speech
 from services.video.templates import (
     slide_title, slide_map, slide_street, slide_interior,
-    slide_room_info, slide_nearby_shops, slide_copy, slide_cta,
+    slide_subway, slide_room_options, slide_price,
+    slide_nearby_shops, slide_cta,
 )
 from services.video.renderer import render_video
 
@@ -121,6 +122,8 @@ with left:
         "options": regen_room.options if regen_room else ["에어컨", "세탁기", "냉장고"],
         "loan_available": regen_room.loan_available if regen_room else False,
         "agent_comment": regen_room.agent_comment if regen_room else "",
+        "facing": regen_room.facing if regen_room else "",
+        "room_config": regen_room.room_config if regen_room else "",
     }
 
     with st.form("room_form"):
@@ -142,6 +145,15 @@ with left:
                                     value=defaults["floor"])
 
         options = st.multiselect("옵션", OPTIONS_LIST, default=defaults["options"])
+
+        col3, col4 = st.columns(2)
+        with col3:
+            facing = st.text_input("방향 (선택)", value=defaults["facing"],
+                                   placeholder="예: 남향, 남동향")
+        with col4:
+            room_config = st.text_input("방 구성 (선택)", value=defaults["room_config"],
+                                        placeholder="예: 방2 거실1 화장실1")
+
         loan_available = st.checkbox("전세 대출 가능", value=defaults["loan_available"])
         agent_comment = st.text_area("중개자 코멘트 (선택)",
                                      value=defaults["agent_comment"] or "",
@@ -215,7 +227,8 @@ with right:
 
             status.update(label="🛒 근처 편의시설 검색 중...")
             try:
-                shops_list = find_nearby_shops(lat, lng)
+                region_hint = " ".join(address.split()[:2])
+                shops_list = find_nearby_shops(lat, lng, region_hint=region_hint)
                 for s in shops_list:
                     st.write(f"• {s['name']} ({s['distance']}m)")
             except Exception as e:
@@ -270,64 +283,67 @@ with right:
             status.update(label="🎬 영상 렌더링 중...")
             video_path = str(OUTPUT_DIR / f"reels_{slug}.mp4")
 
-            def _narr(idx: int) -> str:
-                return narrations[idx] if idx < len(narrations) else ""
-
             def _audio(idx: int) -> str | None:
                 return audio_paths[idx] if idx < len(audio_paths) else None
 
             try:
-                # 동네 이름 추출: "서울시 강남구 역삼동 123" → "강남구 역삼동"
-                parts = address.split()
-                neighborhood = " ".join(parts[1:3]) if len(parts) >= 3 else parts[0]
+                price_str = (
+                    f"보증 {int(deposit):,} / 월 {int(monthly_rent)}만원"
+                    if int(monthly_rent) else f"전세 {int(deposit):,}만원"
+                )
 
-                n = 0  # narration index
-                slides_data: list[tuple] = [
-                    (slide_title(neighborhood, subtitle=_narr(n)), 2.0, _audio(n)),
-                ]
-                n += 1
-                slides_data.append(
-                    (slide_map(wide_map_path or "", subtitle=_narr(n)), 2.0, _audio(n))
-                )
-                n += 1
-                slides_data.append(
-                    (slide_map(map_path or "", subtitle=_narr(n)), 2.0, _audio(n))
-                )
-                n += 1
-                slides_data.append(
-                    (slide_street(sv_path or "", subtitle=_narr(n)), 3.0, _audio(n))
-                )
-                n += 1
+                ai = 0  # audio index
+                slides_data: list[tuple] = []
+
+                # 1. 썸네일
+                slides_data.append((slide_title(address, price_str), 2.0, _audio(ai))); ai += 1
+                # 2. 넓은 지도
+                slides_data.append((slide_map(wide_map_path or ""), 2.0, _audio(ai))); ai += 1
+                # 3. 거리뷰
+                slides_data.append((slide_street(sv_path or "", subtitle=address), 3.0, _audio(ai))); ai += 1
+                # 4. 실내 사진
                 for ipath in interior_paths:
-                    slides_data.append(
-                        (slide_interior(ipath, subtitle=_narr(n)), 3.0, _audio(n))
-                    )
-                    n += 1
-                slides_data.append(
-                    (slide_room_info(
-                        address=address,
-                        floor=int(floor),
-                        size_pyeong=float(size_pyeong),
-                        deposit=int(deposit),
-                        monthly_rent=int(monthly_rent),
-                        year_built=int(year_built),
-                        options=list(options),
-                        loan_available=bool(loan_available),
-                        subtitle=_narr(n),
-                    ), 3.0, _audio(n))
+                    slides_data.append((slide_interior(ipath), 3.0, _audio(ai))); ai += 1
+                # 5. 지하철역 지도
+                subway_subtitle = "  ".join(
+                    f"{s['station']} 도보 {s['walk_min']}분" for s in subway_list[:2]
                 )
-                n += 1
-                slides_data.append(
-                    (slide_nearby_shops(shops_list, subtitle=_narr(n)), 3.0, _audio(n))
-                )
-                n += 1
-                slides_data.append(
-                    (slide_copy(copy["features"], subtitle=_narr(n)), 4.0, _audio(n))
-                )
-                n += 1
-                slides_data.append(
-                    (slide_cta(copy["cta"], copy["hashtags"], subtitle=_narr(n)), 3.0, _audio(n))
-                )
+                slides_data.append((slide_subway(subway_list, map_path=map_path or "", subtitle=subway_subtitle), 3.0, _audio(ai))); ai += 1
+                # 6. 편의시설 — 카테고리별
+                mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
+                mart_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in mart_kw)]
+                if mart_shops:
+                    mart_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in mart_shops[:2])
+                    slides_data.append((slide_nearby_shops(mart_shops, header="🏪 마트 / 시장", subtitle=mart_sub), 3.0, _audio(ai))); ai += 1
+                conv_shops = [s for s in shops_list if "편의점" in s.get("category", "")]
+                if conv_shops:
+                    conv_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in conv_shops[:2])
+                    slides_data.append((slide_nearby_shops(conv_shops, header="🏪 편의점", subtitle=conv_sub), 3.0, _audio(ai))); ai += 1
+                ent_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("영화관", "서점"))]
+                if ent_shops:
+                    ent_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in ent_shops[:2])
+                    slides_data.append((slide_nearby_shops(ent_shops, header="🎬 영화관 / 서점", subtitle=ent_sub), 3.0, _audio(ai))); ai += 1
+                park_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("공원", "근린공원"))]
+                if park_shops:
+                    park_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in park_shops[:2])
+                    slides_data.append((slide_nearby_shops(park_shops, header="🌳 공원", subtitle=park_sub), 3.0, _audio(ai))); ai += 1
+                # 7. 옵션 + 방향 + 준공연도 + 방 구성
+                opts_sub = f"{float(size_pyeong)}평 {int(floor)}층" + (f"  {facing}" if facing else "") + (f"  {room_config}" if room_config else "")
+                slides_data.append((slide_room_options(
+                    floor=int(floor), size_pyeong=float(size_pyeong), year_built=int(year_built),
+                    options=list(options), facing=str(facing) if facing else "",
+                    room_config=str(room_config) if room_config else "",
+                    subtitle=opts_sub,
+                ), 3.0, _audio(ai))); ai += 1
+                # 8. 가격 + 전세대출
+                price_sub = price_str + ("  전세대출 가능" if loan_available else "")
+                slides_data.append((slide_price(
+                    deposit=int(deposit), monthly_rent=int(monthly_rent),
+                    loan_available=bool(loan_available), address=address,
+                    subtitle=price_sub,
+                ), 3.0, _audio(ai))); ai += 1
+                # 9. CTA
+                slides_data.append((slide_cta(copy["cta"], copy["hashtags"]), 3.0, _audio(ai)))
 
                 render_video(slides_data, video_path)
                 st.write("영상 저장 완료")
@@ -351,6 +367,8 @@ with right:
                 agent_comment=agent_comment or None,
                 interior_paths=interior_paths,
                 shops_info=shops_list,
+                facing=str(facing) if facing else None,
+                room_config=str(room_config) if room_config else None,
             )
             room_id = db.insert_room(room)
             if video_path:

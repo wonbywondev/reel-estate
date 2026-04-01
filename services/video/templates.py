@@ -110,22 +110,45 @@ def _draw_subtitle(img: Image.Image, text: str) -> Image.Image:
 
 
 # ---------------------------------------------------------------------------
-# 슬라이드 0: 동네 제목 (썸네일 겸용)
+# 슬라이드 0: 썸네일 (주소 + 가격)
 # ---------------------------------------------------------------------------
 
-def slide_title(neighborhood: str, subtitle: str = "") -> Image.Image:
-    """동네 이름을 중앙에 크게 표시한다. 썸네일 겸용."""
+def slide_title(address: str, price_str: str) -> Image.Image:
+    """주소와 가격을 중앙에 표시한다. 썸네일 겸용. 자막 없음."""
     img = _base()
     draw = ImageDraw.Draw(img)
 
-    f_main = _font(90)
-    f_sub = _font(44)
+    f_addr = _font(62)
+    f_price = _font(80)
 
-    # 동네 이름 상단 1/3 지점
-    _draw_text_centered(draw, H // 3 - 60, neighborhood, f_main, YELLOW)
-    _draw_text_centered(draw, H // 3 + 80, "매물 소개", f_sub, GRAY)
+    # 주소: 최대 width 넘으면 줄바꿈
+    max_w = W - 100
+    words = address.split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        test = (current + " " + word).strip()
+        bbox = draw.textbbox((0, 0), test, font=f_addr)
+        if bbox[2] - bbox[0] > max_w and current:
+            lines.append(current)
+            current = word
+        else:
+            current = test
+    if current:
+        lines.append(current)
 
-    return _draw_subtitle(img, subtitle)
+    line_h = int(draw.textbbox((0, 0), "가", font=f_addr)[3]) + 12
+    total_addr_h = len(lines) * line_h
+    y = H // 2 - total_addr_h - 60
+    for line in lines:
+        _draw_text_centered(draw, y, line, f_addr, WHITE)
+        y += line_h
+
+    # 가격
+    y += 40
+    _draw_text_centered(draw, y, price_str, f_price, YELLOW)
+
+    return img
 
 
 # ---------------------------------------------------------------------------
@@ -163,19 +186,193 @@ def slide_street(sv_path: str, subtitle: str = "") -> Image.Image:
 # 슬라이드 3: 실내 사진
 # ---------------------------------------------------------------------------
 
-def slide_interior(photo_path: str, subtitle: str = "") -> Image.Image:
-    """실내 사진을 9:16 프레임에 꽉 채워 배치한다."""
+def slide_interior(photo_path: str, subtitle: str = "", label: str = "") -> Image.Image:
+    """실내 사진을 9:16 프레임에 꽉 채워 배치한다. label이 있으면 우상단에 표시."""
     img = _base()
     try:
         photo = Image.open(photo_path).convert("RGB")
         img.paste(_fit_cover(photo, W, H), (0, 0))
     except Exception:
         pass
+    if label:
+        draw = ImageDraw.Draw(img)
+        f = _font(44)
+        bbox = draw.textbbox((0, 0), label, font=f)
+        tw = bbox[2] - bbox[0]
+        pad = 16
+        rx = W - tw - pad * 2 - 40
+        ry = 60
+        draw.rounded_rectangle(
+            [(rx, ry), (rx + tw + pad * 2, ry + bbox[3] - bbox[1] + pad * 2)],
+            radius=8, fill=(0, 0, 0, 180),
+        )
+        draw.text((rx + pad, ry + pad), label, font=f, fill=WHITE)
     return _draw_subtitle(img, subtitle)
 
 
 # ---------------------------------------------------------------------------
-# 슬라이드 4: 방 정보 카드
+# 슬라이드: 지하철역 지도 (텍스트 카드)
+# ---------------------------------------------------------------------------
+
+def slide_subway(subway_list: list[dict], map_path: str = "", subtitle: str = "") -> Image.Image:
+    """지하철역 지도 이미지 + 역명/거리 오버레이.
+
+    Args:
+        subway_list: [{"station": str, "walk_min": int, "distance_m": int, "line": str}, ...]
+        map_path: 지하철역이 포함된 정밀 지도 이미지 경로
+    """
+    img = _base()
+    if map_path:
+        try:
+            map_img = Image.open(map_path).convert("RGB")
+            img.paste(_fit_cover(map_img, W, H), (0, 0))
+        except Exception:
+            pass
+
+    draw = ImageDraw.Draw(img)
+
+    # 상단 반투명 바에 역 정보 표시
+    f_header = _font(52)
+    f_item = _font(48)
+    f_dist = _font(36)
+
+    info_lines: list[tuple[str, str]] = []
+    for s in subway_list[:3]:
+        name = f"{s['station']} ({s.get('line', '')})"
+        dist = f"도보 {s['walk_min']}분  {s.get('distance_m', '')}m"
+        info_lines.append((name, dist))
+
+    if not info_lines:
+        return _draw_subtitle(img, subtitle)
+
+    line_block_h = 100
+    total_h = len(info_lines) * line_block_h + 40
+    bar_top = 80
+
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    bar = Image.new("RGBA", (W, total_h + 40), (0, 0, 0, 190))
+    overlay.paste(bar, (0, bar_top))
+    img_rgba = img.convert("RGBA")
+    img_rgba = Image.alpha_composite(img_rgba, overlay)
+    img = img_rgba.convert("RGB")
+
+    draw = ImageDraw.Draw(img)
+    y = bar_top + 30
+    _draw_text_centered(draw, y, "🚇 지하철역", f_header, YELLOW)
+    y += 80
+    for name, dist in info_lines:
+        _draw_text_centered(draw, y, name, f_item, WHITE)
+        y += 58
+        _draw_text_centered(draw, y, dist, f_dist, GRAY)
+        y += 52
+
+    return _draw_subtitle(img, subtitle)
+
+
+# ---------------------------------------------------------------------------
+# 슬라이드 4: 방 정보 카드 — 옵션/방향/준공/방구성
+# ---------------------------------------------------------------------------
+
+def slide_room_options(
+    floor: int,
+    size_pyeong: float,
+    year_built: int,
+    options: list[str],
+    facing: str = "",
+    room_config: str = "",
+    subtitle: str = "",
+) -> Image.Image:
+    """옵션 · 방향 · 준공연도 · 방 구성 슬라이드."""
+    img = _base()
+    draw = ImageDraw.Draw(img)
+
+    f_mid = _font(52)
+    f_small = _font(40)
+    f_tag = _font(34)
+
+    y = 200
+
+    # 기본 정보
+    info_parts = [f"📐 {size_pyeong}평   {floor}층", f"🏗️ {year_built}년 준공"]
+    if facing:
+        info_parts.append(f"🧭 {facing}")
+    if room_config:
+        info_parts.append(f"🚪 {room_config}")
+
+    for d in info_parts:
+        _draw_text_centered(draw, y, d, f_mid)
+        y += 90
+
+    y += 10
+    draw.line([(80, y), (W - 80, y)], fill=GRAY, width=2)
+    y += 40
+
+    # 옵션 태그
+    _draw_text_centered(draw, y, "옵션", f_small, GRAY)
+    y += 60
+
+    tag_pad, tag_gap = 20, 16
+    row_x, row_y = 80, y
+    for opt in options:
+        bbox = draw.textbbox((0, 0), opt, font=f_tag)
+        tw = bbox[2] - bbox[0] + tag_pad * 2
+        if row_x + tw > W - 80:
+            row_x = 80
+            row_y += 60
+        draw.rounded_rectangle(
+            [(row_x, row_y), (row_x + tw, row_y + 50)],
+            radius=10, outline=GRAY, width=2,
+        )
+        draw.text((row_x + tag_pad, row_y + 8), opt, font=f_tag, fill=WHITE)
+        row_x += tw + tag_gap
+
+    return _draw_subtitle(img, subtitle)
+
+
+# ---------------------------------------------------------------------------
+# 슬라이드 5: 가격 + 전세대출
+# ---------------------------------------------------------------------------
+
+def slide_price(
+    deposit: int,
+    monthly_rent: int,
+    loan_available: bool = False,
+    address: str = "",
+    subtitle: str = "",
+) -> Image.Image:
+    """가격 + 전세대출 슬라이드."""
+    img = _base()
+    draw = ImageDraw.Draw(img)
+
+    f_large = _font(72)
+
+    y = H // 2 - 160
+
+    # 가격
+    if monthly_rent == 0:
+        price = f"전세  {deposit:,}만원"
+    else:
+        price = f"보증 {deposit:,}"
+        _draw_text_centered(draw, y, price, f_large, YELLOW)
+        y += 110
+        price = f"월 {monthly_rent}만원"
+    _draw_text_centered(draw, y, price, f_large, YELLOW)
+    y += 110
+
+    # 전세대출 뱃지
+    if loan_available:
+        badge = "✅ 전세 대출 가능"
+        _draw_text_centered(draw, y, badge, _font(48), (100, 220, 100))
+        y += 70
+
+    if address:
+        _draw_text_centered(draw, H - 140, address, _font(32), GRAY)
+
+    return _draw_subtitle(img, subtitle)
+
+
+# ---------------------------------------------------------------------------
+# 슬라이드 4 (구버전 호환): 방 정보 카드 — 옵션 + 가격 통합
 # ---------------------------------------------------------------------------
 
 def slide_room_info(
@@ -187,8 +384,11 @@ def slide_room_info(
     year_built: int,
     options: list[str],
     loan_available: bool = False,
+    facing: str = "",
+    room_config: str = "",
     subtitle: str = "",
 ) -> Image.Image:
+    """옵션·방향·준공연도·방구성 + 가격+전세대출 통합 카드 (구버전 호환용)."""
     img = _base()
     draw = ImageDraw.Draw(img)
 
@@ -218,7 +418,12 @@ def slide_room_info(
     y += 40
 
     # 상세 정보
-    for d in [f"📐 {size_pyeong}평   {floor}층", f"🏗️ {year_built}년 준공"]:
+    info_parts = [f"📐 {size_pyeong}평   {floor}층", f"🏗️ {year_built}년 준공"]
+    if facing:
+        info_parts.append(f"🧭 {facing}")
+    if room_config:
+        info_parts.append(f"🚪 {room_config}")
+    for d in info_parts:
         _draw_text_centered(draw, y, d, f_mid)
         y += 80
 
@@ -254,11 +459,12 @@ def slide_room_info(
 # 슬라이드: 근처 편의시설 (마트/시장)
 # ---------------------------------------------------------------------------
 
-def slide_nearby_shops(shops: list[dict], subtitle: str = "") -> Image.Image:
-    """근처 마트/시장 목록을 표시한다.
+def slide_nearby_shops(shops: list[dict], header: str = "🛒 근처 편의시설", subtitle: str = "") -> Image.Image:
+    """근처 편의시설 목록을 표시한다.
 
     Args:
         shops: [{"name": str, "category": str, "distance": int}, ...]
+        header: 슬라이드 제목 (카테고리별로 다르게 지정)
     """
     img = _base()
     draw = ImageDraw.Draw(img)
@@ -268,7 +474,7 @@ def slide_nearby_shops(shops: list[dict], subtitle: str = "") -> Image.Image:
     f_dist = _font(38)
 
     y = 400
-    _draw_text_centered(draw, y, "🛒 근처 편의시설", f_header, YELLOW)
+    _draw_text_centered(draw, y, header, f_header, YELLOW)
     y += 120
 
     draw.line([(80, y), (W - 80, y)], fill=GRAY, width=2)

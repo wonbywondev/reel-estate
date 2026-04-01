@@ -45,7 +45,10 @@ class Database:
             ("loan_available", "INTEGER DEFAULT 0"),
             ("agent_comment", "TEXT"),
             ("interior_paths", "TEXT"),
+            ("interior_labels", "TEXT"),
             ("shops_info", "TEXT"),
+            ("facing", "TEXT"),
+            ("room_config", "TEXT"),
         ]:
             try:
                 self._conn.execute(f"ALTER TABLE rooms ADD COLUMN {col} {definition}")
@@ -62,8 +65,9 @@ class Database:
             """INSERT INTO rooms
                (address, floor, size_pyeong, deposit, monthly_rent, options,
                 year_built, lat, lng, subway_info, video_path,
-                loan_available, agent_comment, interior_paths, shops_info)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                loan_available, agent_comment, interior_paths, interior_labels,
+                shops_info, facing, room_config)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 room.address, room.floor, room.size_pyeong,
                 room.deposit, room.monthly_rent,
@@ -74,7 +78,10 @@ class Database:
                 int(room.loan_available),
                 room.agent_comment,
                 json.dumps(room.interior_paths, ensure_ascii=False),
+                json.dumps(room.interior_labels, ensure_ascii=False),
                 json.dumps(room.shops_info, ensure_ascii=False),
+                room.facing,
+                room.room_config,
             ),
         )
         self.conn.commit()
@@ -130,5 +137,8 @@ class Database:
             loan_available=bool(row["loan_available"]) if "loan_available" in keys else False,
             agent_comment=row["agent_comment"] if "agent_comment" in keys else None,
             interior_paths=json.loads(row["interior_paths"]) if "interior_paths" in keys and row["interior_paths"] else [],
+            interior_labels=json.loads(row["interior_labels"]) if "interior_labels" in keys and row["interior_labels"] else [],
             shops_info=json.loads(row["shops_info"]) if "shops_info" in keys and row["shops_info"] else [],
+            facing=row["facing"] if "facing" in keys else None,
+            room_config=row["room_config"] if "room_config" in keys else None,
         )

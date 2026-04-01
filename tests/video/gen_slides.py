@@ -26,7 +26,8 @@ from services.street.playwright_shot import take_street_view
 from services.ai.copy_writer import generate_copy
 from services.video.templates import (
     slide_title, slide_map, slide_street, slide_interior,
-    slide_room_info, slide_nearby_shops, slide_copy, slide_cta,
+    slide_subway, slide_room_options, slide_price,
+    slide_nearby_shops, slide_cta,
 )
 
 # ---------------------------------------------------------------------------
@@ -42,7 +43,10 @@ OPTIONS = ["에어컨", "세탁기", "냉장고", "인터넷"]
 YEAR_BUILT = 2018
 LOAN_AVAILABLE = True
 AGENT_COMMENT = "인천타워 인근 역세권 매물입니다."
-INTERIOR_PATHS: list[str] = []  # 실내 사진 없음
+FACING = "남향"
+ROOM_CONFIG = "방1 거실1 화장실1"
+INTERIOR_PATHS: list[str] = []   # 실내 사진 없음
+INTERIOR_LABELS: list[str] = []  # 실내 사진 레이블 (INTERIOR_PATHS와 동일 인덱스)
 
 # ---------------------------------------------------------------------------
 # 출력 폴더 생성
@@ -127,67 +131,118 @@ copy = generate_copy(
     agent_comment=AGENT_COMMENT,
     interior_count=len(INTERIOR_PATHS),
 )
-narrations: list[str] = copy.get("narrations", [])
-
 # ---------------------------------------------------------------------------
 # 7. 슬라이드 이미지 저장 (자막 포함)
 # ---------------------------------------------------------------------------
 
 step("슬라이드 이미지 저장")
 
-def _narr(idx: int) -> str:
-    return narrations[idx] if idx < len(narrations) else ""
+price_str = f"보증 {DEPOSIT:,} / 월 {MONTHLY_RENT}만원" if MONTHLY_RENT else f"전세 {DEPOSIT:,}만원"
 
-parts = ADDRESS.split()
-neighborhood = " ".join(parts[1:3]) if len(parts) >= 3 else parts[0]
-
-slides_meta: list[tuple[str, str]] = []  # (파일명, 나레이션)
+slides_meta: list[tuple[str, str]] = []  # (파일명, 자막)
 n = 0
 
-def save_slide(name: str, img, narration: str):
+def save_slide(name: str, img, subtitle: str = ""):
     path = out_dir / name
     img.save(path)
-    slides_meta.append((name, narration))
+    slides_meta.append((name, subtitle))
     print(f"  → {name}")
 
-save_slide(f"{n+1:02d}_title.png", slide_title(neighborhood, subtitle=_narr(n)), _narr(n))
+
+# 1. 썸네일 — 주소 + 가격 (자막 없음)
+save_slide(f"{n+1:02d}_title.png", slide_title(ADDRESS, price_str))
 n += 1
-save_slide(f"{n+1:02d}_map_wide.png", slide_map(wide_map_path, subtitle=_narr(n)), _narr(n))
+
+# 2. 넓은 지도 (자막 없음)
+save_slide(f"{n+1:02d}_map_wide.png", slide_map(wide_map_path))
 n += 1
-save_slide(f"{n+1:02d}_map.png", slide_map(map_path, subtitle=_narr(n)), _narr(n))
+
+# 3. 거리뷰 — 자막: 주소
+save_slide(f"{n+1:02d}_streetview.png", slide_street(sv_path, subtitle=ADDRESS), ADDRESS)
 n += 1
-save_slide(f"{n+1:02d}_streetview.png", slide_street(sv_path, subtitle=_narr(n)), _narr(n))
-n += 1
+
+# 4. 실내 사진 (옵션, 반복) — 자막: 레이블
 for i, ipath in enumerate(INTERIOR_PATHS):
-    save_slide(f"{n+1:02d}_interior_{i+1}.png", slide_interior(ipath, subtitle=_narr(n)), _narr(n))
+    lbl = INTERIOR_LABELS[i] if i < len(INTERIOR_LABELS) else ""
+    save_slide(f"{n+1:02d}_interior_{i+1}.png", slide_interior(ipath, subtitle=lbl, label=lbl), lbl)
     n += 1
-save_slide(f"{n+1:02d}_room_info.png", slide_room_info(
-    address=ADDRESS, floor=FLOOR, size_pyeong=SIZE_PYEONG,
-    deposit=DEPOSIT, monthly_rent=MONTHLY_RENT, year_built=YEAR_BUILT,
-    options=OPTIONS, loan_available=LOAN_AVAILABLE, subtitle=_narr(n),
-), _narr(n))
+
+# 5. 지하철역 지도 — 자막: 역명 + 거리
+subway_subtitle = "  ".join(
+    f"{s['station']} 도보 {s['walk_min']}분" for s in subway_list[:2]
+)
+save_slide(f"{n+1:02d}_subway.png", slide_subway(subway_list, map_path=map_path, subtitle=subway_subtitle), subway_subtitle)
 n += 1
-save_slide(f"{n+1:02d}_shops.png", slide_nearby_shops(shops_list, subtitle=_narr(n)), _narr(n))
+
+# 6. 근처 편의시설 — 카테고리별 분리
+# 마트류 (슈퍼,마트 / 종합생활용품 / 시장 / 백화점)
+mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
+mart_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in mart_kw)]
+if mart_shops:
+    mart_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in mart_shops[:2])
+    save_slide(f"{n+1:02d}_shops_mart.png",
+               slide_nearby_shops(mart_shops, header="🏪 마트 / 시장", subtitle=mart_subtitle), mart_subtitle)
+    n += 1
+
+# 편의점
+conv_shops = [s for s in shops_list if "편의점" in s.get("category", "")]
+if conv_shops:
+    conv_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in conv_shops[:2])
+    save_slide(f"{n+1:02d}_shops_conv.png",
+               slide_nearby_shops(conv_shops, header="🏪 편의점", subtitle=conv_subtitle), conv_subtitle)
+    n += 1
+
+# 영화관 / 서점
+ent_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("영화관", "서점"))]
+if ent_shops:
+    ent_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in ent_shops[:2])
+    save_slide(f"{n+1:02d}_shops_ent.png",
+               slide_nearby_shops(ent_shops, header="🎬 영화관 / 서점", subtitle=ent_subtitle), ent_subtitle)
+    n += 1
+
+# 공원
+park_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("공원", "근린공원"))]
+if park_shops:
+    park_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in park_shops[:2])
+    save_slide(f"{n+1:02d}_shops_park.png",
+               slide_nearby_shops(park_shops, header="🌳 공원", subtitle=park_subtitle), park_subtitle)
+    n += 1
+
+# 7. 옵션 + 방향 + 준공연도 + 방 구성
+options_subtitle = f"{SIZE_PYEONG}평 {FLOOR}층  {FACING}  {ROOM_CONFIG}" if FACING else f"{SIZE_PYEONG}평 {FLOOR}층  {ROOM_CONFIG}"
+save_slide(f"{n+1:02d}_room_options.png",
+           slide_room_options(
+               floor=FLOOR, size_pyeong=SIZE_PYEONG, year_built=YEAR_BUILT,
+               options=OPTIONS, facing=FACING, room_config=ROOM_CONFIG,
+               subtitle=options_subtitle,
+           ), options_subtitle)
 n += 1
-save_slide(f"{n+1:02d}_copy.png", slide_copy(copy["features"], subtitle=_narr(n)), _narr(n))
+
+# 8. 가격 + 전세대출
+price_subtitle = price_str + ("  전세대출 가능" if LOAN_AVAILABLE else "")
+save_slide(f"{n+1:02d}_price.png",
+           slide_price(
+               deposit=DEPOSIT, monthly_rent=MONTHLY_RENT,
+               loan_available=LOAN_AVAILABLE, address=ADDRESS,
+               subtitle=price_subtitle,
+           ), price_subtitle)
 n += 1
-save_slide(f"{n+1:02d}_cta.png", slide_cta(copy["cta"], copy["hashtags"], subtitle=_narr(n)), _narr(n))
+
+# 9. CTA
+save_slide(f"{n+1:02d}_cta.png", slide_cta(copy["cta"], copy["hashtags"]))
 
 # ---------------------------------------------------------------------------
-# 9. 대본 저장
+# 8. 자막 저장
 # ---------------------------------------------------------------------------
 
-step("대본 저장")
+step("자막 저장")
 script_path = out_dir / "script.txt"
 with open(script_path, "w", encoding="utf-8") as f:
-    for filename, narration in slides_meta:
-        f.write(f"[{filename}]\n{narration}\n\n")
+    for filename, subtitle in slides_meta:
+        f.write(f"[{filename}]\n{subtitle}\n\n")
 
     f.write("---\n\n")
-    f.write("[특징]\n")
-    for feat in copy["features"]:
-        f.write(f"- {feat}\n")
-    f.write(f"\n[CTA]\n{copy['cta']}\n\n")
+    f.write(f"[CTA]\n{copy['cta']}\n\n")
     f.write(f"[해시태그]\n{' '.join(copy['hashtags'])}\n")
 
 print(f"  → script.txt")
