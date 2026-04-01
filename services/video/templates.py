@@ -133,14 +133,15 @@ def slide_title(neighborhood: str, subtitle: str = "") -> Image.Image:
 # ---------------------------------------------------------------------------
 
 def slide_map(map_path: str, subtitle: str = "") -> Image.Image:
-    """지도 이미지를 9:16 프레임에 꽉 채워 배치한다."""
+    """지도 이미지를 9:16 프레임에 꽉 채워 배치한다. 자막 없음."""
+    _ = subtitle
     img = _base()
     try:
         map_img = Image.open(map_path).convert("RGB")
         img.paste(_fit_cover(map_img, W, H), (0, 0))
     except Exception:
         pass
-    return _draw_subtitle(img, subtitle)
+    return img
 
 
 # ---------------------------------------------------------------------------
