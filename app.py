@@ -264,6 +264,18 @@ with right:
                 sv_path = None
 
             status.update(label="✍️ AI 대본 및 카피 생성 중...")
+            # 실제 편의시설 카테고리 목록 확정
+            mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
+            _shop_cats: list[str] = []
+            if any(any(kw in s.get("category", "") for kw in mart_kw) for s in shops_list):
+                _shop_cats.append("마트 / 시장")
+            if any("편의점" in s.get("category", "") for s in shops_list):
+                _shop_cats.append("편의점")
+            if any(any(kw in s.get("category", "") for kw in ("영화관", "서점")) for s in shops_list):
+                _shop_cats.append("영화관 / 서점")
+            if any(any(kw in s.get("category", "") for kw in ("공원", "근린공원")) for s in shops_list):
+                _shop_cats.append("공원")
+
             try:
                 copy = generate_copy(
                     address=address,
@@ -277,6 +289,8 @@ with right:
                     loan_available=bool(loan_available),
                     agent_comment=agent_comment or None,
                     interior_count=len(interior_paths),
+                    interior_labels=interior_labels,
+                    shop_categories=_shop_cats,
                 )
             except Exception as e:
                 status.update(label="❌ 카피 생성 실패", state="error")

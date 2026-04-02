@@ -12,6 +12,29 @@ load_dotenv()
 MODEL = "gpt-5-mini"
 
 
+def build_slide_list(
+    interior_count: int = 0,
+    interior_labels: list[str] | None = None,
+    shop_categories: list[str] | None = None,
+) -> list[str]:
+    """실제 렌더링 순서와 동일한 슬라이드 목록을 반환한다."""
+    slides = [
+        "썸네일 (주소 + 가격)",
+        "넓은 지도 (동네 위치)",
+        "거리뷰 (주변 환경 묘사)",
+    ]
+    for i in range(interior_count):
+        lbl = (interior_labels or [])[i] if interior_labels and i < len(interior_labels) else ""
+        slides.append(f"실내 사진 {i + 1}" + (f" ({lbl})" if lbl else ""))
+    slides.append("지하철역 지도 (역명 + 도보 거리)")
+    for cat in (shop_categories or []):
+        slides.append(f"근처 편의시설 — {cat}")
+    slides.append("방 정보 (평수/층/준공/방향/방구성/옵션)")
+    slides.append("가격 (보증금/월세/전세대출)")
+    slides.append("CTA (문의 유도)")
+    return slides
+
+
 def generate_copy(
     address: str,
     floor: int,
@@ -24,13 +47,14 @@ def generate_copy(
     loan_available: bool = False,
     agent_comment: str | None = None,
     interior_count: int = 0,
+    interior_labels: list[str] | None = None,
+    shop_categories: list[str] | None = None,
 ) -> dict:
     """매물 정보로 나레이션 대본, 광고 카피, 해시태그를 생성한다.
 
     Returns:
         {
             "narrations": ["슬라이드별 나레이션..."],
-            "features": ["특징1", "특징2", "특징3"],
             "cta": "행동 유도 문구",
             "hashtags": ["해시태그1", ...]
         }
@@ -41,17 +65,7 @@ def generate_copy(
     loan_str = "가능" if loan_available else "불가"
     comment_str = agent_comment if agent_comment else "없음"
 
-    # 슬라이드 구성 목록 생성
-    slides = [
-        "동네 소개 (지역명, 첫 인상 — 짧고 강렬하게)",
-        "지도 넓은 축척 (동네 위치 소개)",
-        "지도 좁은 축척 (지하철역 도보 거리 언급)",
-        "거리뷰 (주변 환경 묘사)",
-    ]
-    for i in range(interior_count):
-        slides.append(f"실내 사진 {i + 1}")
-    slides += ["방 정보 카드 (가격/옵션)", "근처 편의시설 (마트/시장)", "특징 3가지", "CTA"]
-
+    slides = build_slide_list(interior_count, interior_labels, shop_categories)
     slide_list = "\n".join(f"{i+1}. {s}" for i, s in enumerate(slides))
 
     prompt = COPY_PROMPT.format(

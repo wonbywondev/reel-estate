@@ -118,6 +118,17 @@ print(f"  → {sv_path}")
 # ---------------------------------------------------------------------------
 
 step("AI 대본 생성")
+mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
+shop_categories: list[str] = []
+if any(any(kw in s.get("category", "") for kw in mart_kw) for s in shops_list):
+    shop_categories.append("마트 / 시장")
+if any("편의점" in s.get("category", "") for s in shops_list):
+    shop_categories.append("편의점")
+if any(any(kw in s.get("category", "") for kw in ("영화관", "서점")) for s in shops_list):
+    shop_categories.append("영화관 / 서점")
+if any(any(kw in s.get("category", "") for kw in ("공원", "근린공원")) for s in shops_list):
+    shop_categories.append("공원")
+
 copy = generate_copy(
     address=ADDRESS,
     floor=FLOOR,
@@ -130,6 +141,8 @@ copy = generate_copy(
     loan_available=LOAN_AVAILABLE,
     agent_comment=AGENT_COMMENT,
     interior_count=len(INTERIOR_PATHS),
+    interior_labels=INTERIOR_LABELS,
+    shop_categories=shop_categories,
 )
 # ---------------------------------------------------------------------------
 # 7. 슬라이드 이미지 저장 (자막 포함)
