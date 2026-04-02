@@ -11,9 +11,11 @@
 """
 
 import os
+import re
 import time
 import threading
 import http.server
+import subprocess
 from pathlib import Path
 
 import requests
@@ -22,14 +24,27 @@ GRAPH_API_BASE = "https://graph.facebook.com/v22.0"
 
 
 
+PAGE_ID = "1063342293532222"
+
+
 def _get_credentials() -> tuple[str, str]:
     account_id = os.environ.get("INSTA_ACCOUNT_ID", "")
-    token = os.environ.get("INSTA_GRAPH_API_TOKEN", "")
-    if not account_id or not token:
+    user_token = os.environ.get("INSTA_GRAPH_API_TOKEN", "")
+    if not account_id or not user_token:
         raise RuntimeError(
             "INSTA_ACCOUNT_ID, INSTA_GRAPH_API_TOKEN 환경변수를 설정하세요."
         )
-    return account_id, token
+    # 사용자 토큰 → 페이지 토큰 교환
+    resp = requests.get(f"{GRAPH_API_BASE}/{PAGE_ID}", params={
+        "access_token": user_token,
+        "fields": "access_token",
+    }, timeout=15)
+    if not resp.ok:
+        raise RuntimeError(f"페이지 토큰 교환 실패: {resp.text}")
+    page_token = resp.json().get("access_token", "")
+    if not page_token:
+        raise RuntimeError("페이지 토큰을 가져올 수 없습니다. Facebook 페이지 연결을 확인하세요.")
+    return account_id, page_token
 
 
 def _create_container(
@@ -158,10 +173,39 @@ def _start_local_server(directory: str, port: int) -> threading.Thread:
     return t
 
 
+def start_cloudflare_tunnel(port: int = 8888, timeout: int = 30) -> tuple[str, subprocess.Popen]:  # type: ignore[type-arg]
+    """cloudflared 터널을 백그라운드로 실행하고 공개 URL 반환.
+
+    Returns:
+        (public_url, process) — process.terminate()로 종료
+    """
+    proc = subprocess.Popen(
+        ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+
+    deadline = time.time() + timeout
+    url_pattern = re.compile(r"https://[a-z0-9\-]+\.trycloudflare\.com")
+
+    while time.time() < deadline:
+        line = proc.stdout.readline() if proc.stdout else ""  # type: ignore[union-attr]
+        if not line:
+            time.sleep(0.1)
+            continue
+        match = url_pattern.search(line)
+        if match:
+            return match.group(0), proc
+
+    proc.terminate()
+    raise RuntimeError("cloudflared 터널 URL을 가져오지 못했습니다 (타임아웃).")
+
+
 def _get_ngrok_url(port: int) -> str:
     """실행 중인 ngrok 터널에서 공개 URL 조회."""
     try:
-        resp = requests.get(f"http://localhost:4040/api/tunnels", timeout=5)
+        resp = requests.get("http://localhost:4040/api/tunnels", timeout=5)
         tunnels = resp.json().get("tunnels", [])
         for t in tunnels:
             if str(port) in t.get("config", {}).get("addr", ""):
@@ -173,6 +217,8 @@ def _get_ngrok_url(port: int) -> str:
             "ngrok이 실행 중이지 않습니다. 터미널에서 `ngrok http <port>` 실행 후 재시도하세요."
         ) from e
     raise RuntimeError("활성 ngrok 터널을 찾을 수 없습니다.")
+
+
 
 
 def serve_and_upload(

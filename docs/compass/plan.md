@@ -75,14 +75,18 @@
 
 ---
 
-## Phase 4 — Instagram 업로드
+## Phase 4 — Instagram 업로드 ✅ 완료 (재인코딩 제외)
 
 - API 키 발급 완료 (INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN)
-- `services/instagram/uploader.py` — Instagram Graph API 릴스 업로드
-  - 영상 공개 URL 방식: ngrok(로컬 테스트) 또는 S3/Cloudflare R2(운영)
-  - 업로드 흐름: 영상 URL → 미디어 컨테이너 생성(REEL) → 게시(publish)
-  - 위치 태그 2개 (사무소 + 매물) — 추후 구현
-- Streamlit에 "인스타 업로드" 버튼 추가
+- Facebook 페이지(Reel-estate) ↔ Instagram(mukjiithecat) 연결 완료
+- `services/instagram/uploader.py` 구현 완료
+  - 인증: 사용자 토큰 → 페이지 토큰 자동 교환
+  - 공개 URL: Cloudflare Tunnel (cloudflared) 자동 실행 — ngrok-free.dev는 Instagram에서 차단됨
+  - 업로드 흐름: 로컬 파일 서버 → cloudflared 터널 → 컨테이너 생성 → polling → 게시
+- Streamlit 업로드 버튼 구현 완료 (app.py)
+- 미완: 업로드 전 ffmpeg 재인코딩 — 생성 영상 비트레이트 ~266kbps, Instagram 최소 3.5Mbps 요구
+  - 방안: `uploader.py` 또는 `app.py`에서 업로드 직전 재인코딩 추가
+- 위치 태그 2개 (사무소 + 매물) — 추후 구현
 
 ---
 

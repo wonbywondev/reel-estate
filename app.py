@@ -508,7 +508,6 @@ with right:
     if _upload_video_path and Path(_upload_video_path).exists():
         st.divider()
         st.markdown("#### 📲 인스타그램 업로드")
-        st.caption("ngrok이 실행 중이어야 합니다. 터미널: `ngrok http 8888`")
         insta_caption = st.text_area(
             "캡션 (해시태그 포함)",
             value=st.session_state.get("_upload_caption", ""),
@@ -517,25 +516,25 @@ with right:
         )
         if st.button("📲 인스타에 올리기", use_container_width=True):
             log = st.empty()
+            cf_proc = None
+            thread = None
             with st.spinner("업로드 중..."):
                 try:
-                    log.info("1/4 로컬 파일 서버 시작 중 (포트 8888)...")
-                    import time as _time
                     from services.instagram.uploader import (
-                        _start_local_server, _get_ngrok_url, upload_reel
+                        _start_local_server, start_cloudflare_tunnel, upload_reel
                     )
+
+                    log.info("1/3 로컬 파일 서버 시작 중 (포트 8888)...")
                     thread = _start_local_server(
                         str(Path(_upload_video_path).parent), 8888
                     )
-                    _time.sleep(0.5)
 
-                    log.info("2/4 ngrok 터널 URL 조회 중...")
-                    ngrok_url = _get_ngrok_url(8888)
-                    video_url = f"{ngrok_url}/{Path(_upload_video_path).name}"
-                    log.info(f"3/4 영상 URL: `{video_url}` — 인스타 API 전송 중...")
+                    log.info("2/3 Cloudflare 터널 시작 중...")
+                    cf_url, cf_proc = start_cloudflare_tunnel(8888)
+                    video_url = f"{cf_url}/{Path(_upload_video_path).name}"
+                    log.info(f"3/3 URL: `{video_url}` — 인스타 API 전송 중...")
 
                     media_id = upload_reel(video_url, caption=insta_caption or "")
-                    thread.server.shutdown()  # type: ignore[attr-defined]
 
                     log.empty()
                     st.success(f"✅ 업로드 완료! media_id: `{media_id}`")
@@ -543,3 +542,8 @@ with right:
                     log.empty()
                     st.error(f"❌ 업로드 실패: {e}")
                     st.exception(e)
+                finally:
+                    if cf_proc:
+                        cf_proc.terminate()
+                    if thread:
+                        thread.server.shutdown()  # type: ignore[attr-defined]

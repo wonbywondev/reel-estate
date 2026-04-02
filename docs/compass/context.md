@@ -151,8 +151,11 @@ CREATE TABLE rooms (
 
 ### Instagram Graph API
 - API 키 발급 완료: INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN (.env 등록)
-- 영상 업로드는 공개 URL 방식 → 공개 접근 가능한 임시 스토리지 필요 (ngrok 또는 S3/R2)
-- 릴스 업로드 흐름: 영상 URL → 미디어 컨테이너 생성(REEL) → 게시(publish)
+- Facebook 페이지(Reel-estate, PAGE_ID: 1063342293532222) ↔ Instagram 계정(mukjiithecat) 연결 완료
+- 인증: 사용자 토큰 → 페이지 토큰 자동 교환 (`GET /{PAGE_ID}?fields=access_token`)
+- 공개 URL 방식: **Cloudflare Tunnel** (`cloudflared`) 로컬 서버 자동 생성 — ngrok-free.dev는 Instagram API에서 차단됨
+- 업로드 흐름: 로컬 HTTP 서버 시작 → cloudflared 터널 → 영상 URL → 미디어 컨테이너 생성(REELS) → 처리 완료 polling → 게시(publish)
+- 영상 스펙: Instagram은 최소 3.5Mbps 이상 요구 → 업로드 전 ffmpeg 재인코딩 필요 (현재 생성 영상은 ~266kbps로 너무 낮음)
 - 위치 태그 2개: 공인중개사 사무소 + 매물 건물 (추후)
 
 ### n8n 확장
