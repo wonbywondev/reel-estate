@@ -162,19 +162,64 @@ with left:
 
         submitted = st.form_submit_button("✨ 릴스 생성", use_container_width=True, type="primary")
 
-    # form 밖: 사진 업로드 + 설명 입력 (동적 렌더링)
-    interior_files = st.file_uploader(
-        "실내 사진 (선택, 최대 5장)",
-        type=["jpg", "jpeg", "png"],
-        accept_multiple_files=True,
-        key="interior_uploader",
-    )
-    if interior_files:
-        st.caption("사진 설명 (슬라이드에 표시될 레이블, 선택)")
-        for i, f in enumerate(interior_files[:5]):
-            col_img, col_lbl = st.columns([1, 2])
+    # form 밖: 사진 업로드/촬영
+    import hashlib
+    if "interior_photos" not in st.session_state:
+        st.session_state["interior_photos"] = []
+    if "_uploader_key" not in st.session_state:
+        st.session_state["_uploader_key"] = 0
+
+    # 액션 처리
+    _action = st.session_state.pop("_photo_action", None)
+    if _action:
+        _p = st.session_state["interior_photos"]
+        _op, _idx = _action
+        if _op == "del" and 0 <= _idx < len(_p):
+            _p.pop(_idx)
+            st.session_state["_uploader_key"] += 1
+            st.rerun()
+        elif _op == "up" and 0 < _idx < len(_p):
+            _p[_idx], _p[_idx - 1] = _p[_idx - 1], _p[_idx]
+            st.rerun()
+        elif _op == "down" and 0 <= _idx < len(_p) - 1:
+            _p[_idx], _p[_idx + 1] = _p[_idx + 1], _p[_idx]
+            st.rerun()
+
+    st.markdown("**실내 사진** (선택, 최대 5장)")
+    tab_upload, tab_camera = st.tabs(["📁 파일 업로드", "📷 카메라 촬영"])
+    _uk = st.session_state["_uploader_key"]
+    with tab_upload:
+        uploaded = st.file_uploader(
+            "사진 선택",
+            type=["jpg", "jpeg", "png"],
+            accept_multiple_files=True,
+            label_visibility="collapsed",
+            key=f"interior_uploader_{_uk}",
+        )
+        if uploaded:
+            existing = {p["hash"] for p in st.session_state["interior_photos"]}
+            for f in uploaded:
+                raw = f.read()
+                h = hashlib.md5(raw).hexdigest()
+                if h not in existing and len(st.session_state["interior_photos"]) < 5:
+                    st.session_state["interior_photos"].append({"data": raw, "hash": h})
+                    existing.add(h)
+    with tab_camera:
+        shot = st.camera_input("촬영", label_visibility="collapsed")
+        if shot:
+            raw = shot.read()
+            h = hashlib.md5(raw).hexdigest()
+            existing = {p["hash"] for p in st.session_state["interior_photos"]}
+            if h not in existing and len(st.session_state["interior_photos"]) < 5:
+                st.session_state["interior_photos"].append({"data": raw, "hash": h})
+
+    photos: list[dict] = st.session_state["interior_photos"]
+    if photos:
+        st.caption("사진 설명 (슬라이드 하단 자막, 선택)")
+        for i, photo_item in enumerate(photos):
+            col_img, col_lbl, col_btn = st.columns([1, 2, 1])
             with col_img:
-                st.image(f, use_container_width=True)
+                st.image(photo_item["data"], use_container_width=True)
             with col_lbl:
                 st.text_input(
                     f"사진 {i+1} 설명",
@@ -182,6 +227,17 @@ with left:
                     placeholder="예: 거실, 주방, 안방",
                     label_visibility="collapsed",
                 )
+            with col_btn:
+                b1, b2, b3 = st.columns(3)
+                with b1:
+                    if i > 0 and st.button("↑", key=f"move_up_{i}"):
+                        st.session_state["_photo_action"] = ("up", i)
+                with b2:
+                    if i < len(photos) - 1 and st.button("↓", key=f"move_down_{i}"):
+                        st.session_state["_photo_action"] = ("down", i)
+                with b3:
+                    if st.button("🗑️", key=f"del_photo_{i}"):
+                        st.session_state["_photo_action"] = ("del", i)
 
 # ---------------------------------------------------------------------------
 # 오른쪽: 결과
@@ -201,10 +257,9 @@ with right:
         # 실내 사진 저장 + 레이블 수집
         interior_paths: list[str] = []
         interior_labels: list[str] = []
-        uploaded = st.session_state.get("interior_uploader") or []
-        for i, f in enumerate(uploaded[:5]):
+        for i, photo_item in enumerate((st.session_state.get("interior_photos") or [])[:5]):
             ipath = str(OUTPUT_DIR / f"interior_{slug}_{i}.jpg")
-            Path(ipath).write_bytes(f.read())
+            Path(ipath).write_bytes(photo_item["data"])
             interior_paths.append(ipath)
             interior_labels.append(st.session_state.get(f"interior_label_{i}", ""))
 
