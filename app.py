@@ -304,11 +304,8 @@ with right:
                 # 4. 실내 사진
                 for ipath in interior_paths:
                     slides_data.append((slide_interior(ipath), 3.0, _audio(ai))); ai += 1
-                # 5. 지하철역 지도
-                subway_subtitle = "  ".join(
-                    f"{s['station']} 도보 {s['walk_min']}분" for s in subway_list[:2]
-                )
-                slides_data.append((slide_subway(subway_list, map_path=map_path or "", subtitle=subway_subtitle), 3.0, _audio(ai))); ai += 1
+                # 5. 지하철역 지도 (자막 없음)
+                slides_data.append((slide_subway(subway_list, map_path=map_path or ""), 3.0, _audio(ai))); ai += 1
                 # 6. 편의시설 — 카테고리별 (자막 없음)
                 mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
                 mart_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in mart_kw)]
@@ -329,12 +326,10 @@ with right:
                     options=list(options), facing=str(facing) if facing else "",
                     room_config=str(room_config) if room_config else "",
                 ), 3.0, _audio(ai))); ai += 1
-                # 8. 가격 + 전세대출
-                price_sub = price_str + ("  전세대출 가능" if loan_available else "")
+                # 8. 가격 + 전세대출 (자막 없음)
                 slides_data.append((slide_price(
                     deposit=int(deposit), monthly_rent=int(monthly_rent),
                     loan_available=bool(loan_available), address=address,
-                    subtitle=price_sub,
                 ), 3.0, _audio(ai))); ai += 1
                 # 9. CTA
                 slides_data.append((slide_cta(copy["cta"], copy["hashtags"]), 3.0, _audio(ai)))

@@ -167,11 +167,8 @@ for i, ipath in enumerate(INTERIOR_PATHS):
     save_slide(f"{n+1:02d}_interior_{i+1}.png", slide_interior(ipath, subtitle=lbl, label=lbl), lbl)
     n += 1
 
-# 5. 지하철역 지도 — 자막: 역명 + 거리
-subway_subtitle = "  ".join(
-    f"{s['station']} 도보 {s['walk_min']}분" for s in subway_list[:2]
-)
-save_slide(f"{n+1:02d}_subway.png", slide_subway(subway_list, map_path=map_path, subtitle=subway_subtitle), subway_subtitle)
+# 5. 지하철역 지도 (자막 없음, 오버레이에 역 정보 표시)
+save_slide(f"{n+1:02d}_subway.png", slide_subway(subway_list, map_path=map_path))
 n += 1
 
 # 6. 근처 편의시설 — 카테고리별 분리 (자막 없음)
@@ -212,14 +209,12 @@ save_slide(f"{n+1:02d}_room_options.png",
            ))
 n += 1
 
-# 8. 가격 + 전세대출
-price_subtitle = price_str + ("  전세대출 가능" if LOAN_AVAILABLE else "")
+# 8. 가격 + 전세대출 (자막 없음)
 save_slide(f"{n+1:02d}_price.png",
            slide_price(
                deposit=DEPOSIT, monthly_rent=MONTHLY_RENT,
                loan_available=LOAN_AVAILABLE, address=ADDRESS,
-               subtitle=price_subtitle,
-           ), price_subtitle)
+           ))
 n += 1
 
 # 9. CTA
