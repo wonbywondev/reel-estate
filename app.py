@@ -159,13 +159,29 @@ with left:
                                      value=defaults["agent_comment"] or "",
                                      placeholder="예: 햇빛이 잘 들고 조용한 주거 환경입니다.",
                                      height=80)
-        interior_files = st.file_uploader(
-            "실내 사진 (선택, 최대 5장)",
-            type=["jpg", "jpeg", "png"],
-            accept_multiple_files=True,
-        )
 
         submitted = st.form_submit_button("✨ 릴스 생성", use_container_width=True, type="primary")
+
+    # form 밖: 사진 업로드 + 설명 입력 (동적 렌더링)
+    interior_files = st.file_uploader(
+        "실내 사진 (선택, 최대 5장)",
+        type=["jpg", "jpeg", "png"],
+        accept_multiple_files=True,
+        key="interior_uploader",
+    )
+    if interior_files:
+        st.caption("사진 설명 (슬라이드에 표시될 레이블, 선택)")
+        for i, f in enumerate(interior_files[:5]):
+            col_img, col_lbl = st.columns([1, 2])
+            with col_img:
+                st.image(f, use_container_width=True)
+            with col_lbl:
+                st.text_input(
+                    f"사진 {i+1} 설명",
+                    key=f"interior_label_{i}",
+                    placeholder="예: 거실, 주방, 안방",
+                    label_visibility="collapsed",
+                )
 
 # ---------------------------------------------------------------------------
 # 오른쪽: 결과
@@ -182,13 +198,15 @@ with right:
 
         slug = address[:10].replace(' ', '_')
 
-        # 실내 사진 저장
+        # 실내 사진 저장 + 레이블 수집
         interior_paths: list[str] = []
-        if interior_files:
-            for i, f in enumerate(interior_files[:5]):
-                ipath = str(OUTPUT_DIR / f"interior_{slug}_{i}.jpg")
-                Path(ipath).write_bytes(f.read())
-                interior_paths.append(ipath)
+        interior_labels: list[str] = []
+        uploaded = st.session_state.get("interior_uploader") or []
+        for i, f in enumerate(uploaded[:5]):
+            ipath = str(OUTPUT_DIR / f"interior_{slug}_{i}.jpg")
+            Path(ipath).write_bytes(f.read())
+            interior_paths.append(ipath)
+            interior_labels.append(st.session_state.get(f"interior_label_{i}", ""))
 
         with st.status("📍 주소 좌표 변환 중...", expanded=True) as status:
             try:
@@ -302,8 +320,9 @@ with right:
                 # 3. 거리뷰
                 slides_data.append((slide_street(sv_path or "", subtitle=address), 3.0, _audio(ai))); ai += 1
                 # 4. 실내 사진
-                for ipath in interior_paths:
-                    slides_data.append((slide_interior(ipath), 3.0, _audio(ai))); ai += 1
+                for i, ipath in enumerate(interior_paths):
+                    lbl = interior_labels[i] if i < len(interior_labels) else ""
+                    slides_data.append((slide_interior(ipath, subtitle=lbl, label=lbl), 3.0, _audio(ai))); ai += 1
                 # 5. 지하철역 지도 (자막 없음)
                 slides_data.append((slide_subway(subway_list, map_path=map_path or ""), 3.0, _audio(ai))); ai += 1
                 # 6. 편의시설 — 카테고리별 (자막 없음)
@@ -355,6 +374,7 @@ with right:
                 loan_available=bool(loan_available),
                 agent_comment=agent_comment or None,
                 interior_paths=interior_paths,
+                interior_labels=interior_labels,
                 shops_info=shops_list,
                 facing=str(facing) if facing else None,
                 room_config=str(room_config) if room_config else None,
