@@ -516,24 +516,19 @@ with right:
         )
         if st.button("📲 인스타에 올리기", use_container_width=True):
             log = st.empty()
-            cf_proc = None
-            thread = None
             with st.spinner("업로드 중..."):
                 try:
                     from services.instagram.uploader import (
-                        _start_local_server, start_cloudflare_tunnel, upload_reel
+                        reencode_for_instagram, upload_to_r2, upload_reel,
                     )
 
-                    log.info("1/3 로컬 파일 서버 시작 중 (포트 8888)...")
-                    thread = _start_local_server(
-                        str(Path(_upload_video_path).parent), 8888
-                    )
+                    log.info("1/3 인스타 스펙으로 재인코딩 중 (3.5Mbps)...")
+                    upload_path = reencode_for_instagram(_upload_video_path)
 
-                    log.info("2/3 Cloudflare 터널 시작 중...")
-                    cf_url, cf_proc = start_cloudflare_tunnel(8888)
-                    video_url = f"{cf_url}/{Path(_upload_video_path).name}"
-                    log.info(f"3/3 URL: `{video_url}` — 인스타 API 전송 중...")
+                    log.info("2/3 Cloudflare R2 업로드 중...")
+                    video_url = upload_to_r2(upload_path)
 
+                    log.info("3/3 Instagram API 전송 중...")
                     media_id = upload_reel(video_url, caption=insta_caption or "")
 
                     log.empty()
@@ -542,8 +537,3 @@ with right:
                     log.empty()
                     st.error(f"❌ 업로드 실패: {e}")
                     st.exception(e)
-                finally:
-                    if cf_proc:
-                        cf_proc.terminate()
-                    if thread:
-                        thread.server.shutdown()  # type: ignore[attr-defined]

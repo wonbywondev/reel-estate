@@ -75,7 +75,7 @@
 
 ---
 
-## Phase 4 — Instagram 업로드 ✅ 완료 (재인코딩 제외)
+## Phase 4 — Instagram 업로드 ✅ 완료
 
 - API 키 발급 완료 (INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN)
 - Facebook 페이지(Reel-estate) ↔ Instagram(mukjiithecat) 연결 완료

@@ -78,6 +78,8 @@
 - [x] Streamlit 업로드 버튼 (완전 자동화 — 파일 서버 + 터널 + 업로드)
 - [x] 업로드 전 ffmpeg 재인코딩 (H.264 baseline, CBR 3.5Mbps, AAC 128kbps 48kHz)
 - [x] Cloudflare R2 presigned URL로 영상 공개 (tunnel 방식 모두 Meta 서버 차단 확인)
+- [x] app.py 업로드 버튼 R2 방식으로 교체 (재인코딩 → R2 업로드 → Instagram API)
+- [x] 토큰: Graph API Explorer에서 60일 장기 토큰 발급
 - [ ] 위치 태그 2개 (사무소 + 매물) — 추후
 
 ---
