@@ -71,10 +71,11 @@
 ---
 
 ## Phase 4 — Instagram 업로드
-- [ ] 스토리지 연동 (S3 / Cloudflare R2)
-- [ ] `services/upload/instagram.py` 구현
-- [ ] 위치 태그 2개 (사무소 + 매물)
+- [x] API 키 발급 및 .env 등록 (INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN)
+- [ ] `services/instagram/uploader.py` 구현 (미디어 컨테이너 생성 → 게시)
+- [ ] 영상 공개 URL 제공 방식 결정 (ngrok / S3 / Cloudflare R2)
 - [ ] Streamlit 업로드 버튼
+- [ ] 위치 태그 2개 (사무소 + 매물) — 추후
 
 ---
 

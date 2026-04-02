@@ -18,6 +18,7 @@ from services.video.templates import (
     slide_nearby_shops, slide_cta,
 )
 from services.video.renderer import render_video
+from services.instagram.uploader import serve_and_upload
 
 # ---------------------------------------------------------------------------
 # 상수
@@ -347,6 +348,7 @@ with right:
                     interior_labels=interior_labels,
                     shop_categories=_shop_cats,
                 )
+                st.session_state["_copy"] = copy
             except Exception as e:
                 status.update(label="❌ 카피 생성 실패", state="error")
                 st.error(str(e))
@@ -469,6 +471,10 @@ with right:
                     use_container_width=True,
                 )
 
+            # 업로드 UI용 session_state 저장 (submitted 재실행 시 유지)
+            st.session_state["_upload_video_path"] = video_path
+            st.session_state["_upload_caption"] = " ".join(copy.get("hashtags", []))
+
         st.divider()
 
         col_map, col_sv = st.columns(2)
@@ -479,16 +485,61 @@ with right:
             if sv_path and Path(sv_path).exists():
                 st.image(sv_path, caption="거리뷰", use_container_width=True)
 
-        st.divider()
-        st.markdown("### 📝 광고 카피")
-        for feat in copy["features"]:
-            st.markdown(f"- {feat}")
-        st.markdown(f"**CTA:** {copy['cta']}")
-
-        hashtag_str = " ".join(copy["hashtags"])
-        st.text_area("해시태그 (복사용)", hashtag_str, height=80)
-
         st.caption(f"매물 ID: {room_id} | 저장됨")
 
     else:
         st.info("왼쪽에서 매물 정보를 입력하고 '릴스 생성' 버튼을 눌러주세요.")
+
+    # 광고 카피 (session_state 기반, submitted 여부와 무관하게 유지)
+    _copy = st.session_state.get("_copy")
+    if _copy:
+        st.divider()
+        st.markdown("### 📝 광고 카피")
+        for feat in _copy.get("features", []):
+            st.markdown(f"- {feat}")
+        st.markdown(f"**CTA:** {_copy.get('cta', '')}")
+        hashtag_str = " ".join(_copy.get("hashtags", []))
+        st.text_area("해시태그 (복사용)", hashtag_str, height=80)
+
+    # ---------------------------------------------------------------------------
+    # 인스타그램 업로드 (submitted 여부와 무관하게 유지)
+    # ---------------------------------------------------------------------------
+    _upload_video_path = st.session_state.get("_upload_video_path")
+    if _upload_video_path and Path(_upload_video_path).exists():
+        st.divider()
+        st.markdown("#### 📲 인스타그램 업로드")
+        st.caption("ngrok이 실행 중이어야 합니다. 터미널: `ngrok http 8888`")
+        insta_caption = st.text_area(
+            "캡션 (해시태그 포함)",
+            value=st.session_state.get("_upload_caption", ""),
+            height=100,
+            key="insta_caption",
+        )
+        if st.button("📲 인스타에 올리기", use_container_width=True):
+            log = st.empty()
+            with st.spinner("업로드 중..."):
+                try:
+                    log.info("1/4 로컬 파일 서버 시작 중 (포트 8888)...")
+                    import time as _time
+                    from services.instagram.uploader import (
+                        _start_local_server, _get_ngrok_url, upload_reel
+                    )
+                    thread = _start_local_server(
+                        str(Path(_upload_video_path).parent), 8888
+                    )
+                    _time.sleep(0.5)
+
+                    log.info("2/4 ngrok 터널 URL 조회 중...")
+                    ngrok_url = _get_ngrok_url(8888)
+                    video_url = f"{ngrok_url}/{Path(_upload_video_path).name}"
+                    log.info(f"3/4 영상 URL: `{video_url}` — 인스타 API 전송 중...")
+
+                    media_id = upload_reel(video_url, caption=insta_caption or "")
+                    thread.server.shutdown()  # type: ignore[attr-defined]
+
+                    log.empty()
+                    st.success(f"✅ 업로드 완료! media_id: `{media_id}`")
+                except Exception as e:
+                    log.empty()
+                    st.error(f"❌ 업로드 실패: {e}")
+                    st.exception(e)

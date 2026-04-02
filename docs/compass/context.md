@@ -21,7 +21,7 @@
 | TTS | edge-tts (Microsoft Azure) | ko-KR-SunHiNeural, FastAPI 서버 래핑, TTS_VOICE 환경변수로 변경 가능 |
 | 영상 생성 | MoviePy / FFmpeg | 슬라이드쇼, 9:16, ~22초 (슬라이드 수 가변) |
 | DB | SQLite (로컬) | realestate.db, 사용자 로컬에 저장 |
-| 업로드 | Instagram Graph API | MVP는 다운로드만, 추후 구현 |
+| 업로드 | Instagram Graph API | INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN |
 | 워크플로우 | (추후) n8n | 모듈 경계가 n8n 노드 래핑에 적합하게 설계 |
 
 ---
@@ -54,8 +54,8 @@ Gen_for_SmallBusiness/
 │   │   └── templates.py          # 슬라이드 레이아웃 정의
 │   │                             # 폰트: 에이투지체-7Bold.ttf (fallback: NanumGothic)
 │   │                             # 자막: 인스타 dead zone 위 배치 (하단 380px 회피)
-│   └── upload/                   # 자리 예약 — MVP는 미구현
-│       └── instagram.py          # TODO: Instagram Graph API
+│   └── instagram/
+│       └── uploader.py           # Instagram Graph API 릴스 업로드
 ├── tts_server/
 │   ├── main.py                   # FastAPI POST /synthesize
 │   └── model.py                  # edge-tts 기반 한국어 TTS
@@ -149,10 +149,11 @@ CREATE TABLE rooms (
 - 자막 위치: 인스타그램 릴스 dead zone(하단 380px) 위에 배치
 - 자막 크기: 62px
 
-### Instagram Graph API (추후)
-- 비즈니스/크리에이터 계정 + Facebook 앱 심사 필요
-- 영상 업로드는 공개 URL 방식 → S3/Cloudflare R2 임시 스토리지 필요
-- 위치 태그 2개: 공인중개사 사무소 + 매물 건물
+### Instagram Graph API
+- API 키 발급 완료: INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN (.env 등록)
+- 영상 업로드는 공개 URL 방식 → 공개 접근 가능한 임시 스토리지 필요 (ngrok 또는 S3/R2)
+- 릴스 업로드 흐름: 영상 URL → 미디어 컨테이너 생성(REEL) → 게시(publish)
+- 위치 태그 2개: 공인중개사 사무소 + 매물 건물 (추후)
 
 ### n8n 확장
 - 각 services/ 폴더가 독립 모듈로 설계됨 → HTTP Request 노드 또는 Python 실행 노드로 래핑 용이

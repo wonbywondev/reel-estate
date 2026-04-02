@@ -77,11 +77,12 @@
 
 ## Phase 4 — Instagram 업로드
 
-- S3 또는 Cloudflare R2 임시 스토리지 연동
-- `services/upload/instagram.py` — Instagram Graph API 릴스 업로드
-  - 위치 태그: 사무소 주소 + 매물 주소 2개
+- API 키 발급 완료 (INSTA_ACCOUNT_ID, INSTA_ACCESS_TOKEN, INSTA_GRAPH_API_TOKEN)
+- `services/instagram/uploader.py` — Instagram Graph API 릴스 업로드
+  - 영상 공개 URL 방식: ngrok(로컬 테스트) 또는 S3/Cloudflare R2(운영)
+  - 업로드 흐름: 영상 URL → 미디어 컨테이너 생성(REEL) → 게시(publish)
+  - 위치 태그 2개 (사무소 + 매물) — 추후 구현
 - Streamlit에 "인스타 업로드" 버튼 추가
-- `.env`에 `INSTAGRAM_ACCESS_TOKEN`, `AGENCY_ADDRESS` 추가
 
 ---
 

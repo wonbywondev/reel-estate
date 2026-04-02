@@ -18,6 +18,7 @@
 - TTS 나레이션 자동 생성 (edge-tts, `ko-KR-SunHiNeural`)
 - 9:16 릴스 영상 자동 합성 (MoviePy, 슬라이드별 오디오 싱크)
 - 매물 정보 로컬 저장·관리 (SQLite)
+- 생성된 릴스 인스타그램 자동 업로드 (Instagram Graph API)
 
 ---
 
@@ -74,6 +75,11 @@ OPENAI_API_KEY=...
 
 # TTS 음성 변경 (선택, 기본값: ko-KR-SunHiNeural)
 # TTS_VOICE=ko-KR-InJoonNeural
+
+# Instagram Graph API (릴스 자동 업로드)
+INSTA_ACCOUNT_ID=...
+INSTA_ACCESS_TOKEN=...
+INSTA_GRAPH_API_TOKEN=...
 ```
 
 ### 실행
@@ -106,9 +112,11 @@ Gen_for_SmallBusiness/
 │   ├── ai/
 │   │   ├── copy_writer.py    # 광고 카피 + 나레이션 생성
 │   │   └── tts.py            # TTS 서버 인터페이스
-│   └── video/
-│       ├── renderer.py       # MoviePy 영상 렌더링
-│       └── templates.py      # 슬라이드 레이아웃
+│   ├── video/
+│   │   ├── renderer.py       # MoviePy 영상 렌더링
+│   │   └── templates.py      # 슬라이드 레이아웃
+│   └── instagram/
+│       └── uploader.py       # Instagram Graph API 릴스 업로드
 ├── tts_server/
 │   ├── main.py               # FastAPI POST /synthesize
 │   └── model.py              # edge-tts 기반 한국어 TTS
@@ -136,6 +144,7 @@ Gen_for_SmallBusiness/
 | TTS        | edge-tts (Microsoft Azure,`ko-KR-SunHiNeural`) |
 | 영상 합성  | MoviePy 2.x / FFmpeg                             |
 | DB         | SQLite (로컬)                                    |
+| 인스타 업로드 | Instagram Graph API                           |
 
 ---
 
