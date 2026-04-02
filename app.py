@@ -309,31 +309,25 @@ with right:
                     f"{s['station']} 도보 {s['walk_min']}분" for s in subway_list[:2]
                 )
                 slides_data.append((slide_subway(subway_list, map_path=map_path or "", subtitle=subway_subtitle), 3.0, _audio(ai))); ai += 1
-                # 6. 편의시설 — 카테고리별
+                # 6. 편의시설 — 카테고리별 (자막 없음)
                 mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
                 mart_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in mart_kw)]
                 if mart_shops:
-                    mart_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in mart_shops[:2])
-                    slides_data.append((slide_nearby_shops(mart_shops, header="🏪 마트 / 시장", subtitle=mart_sub), 3.0, _audio(ai))); ai += 1
+                    slides_data.append((slide_nearby_shops(mart_shops, header="🏪 마트 / 시장"), 3.0, _audio(ai))); ai += 1
                 conv_shops = [s for s in shops_list if "편의점" in s.get("category", "")]
                 if conv_shops:
-                    conv_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in conv_shops[:2])
-                    slides_data.append((slide_nearby_shops(conv_shops, header="🏪 편의점", subtitle=conv_sub), 3.0, _audio(ai))); ai += 1
+                    slides_data.append((slide_nearby_shops(conv_shops, header="🏪 편의점"), 3.0, _audio(ai))); ai += 1
                 ent_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("영화관", "서점"))]
                 if ent_shops:
-                    ent_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in ent_shops[:2])
-                    slides_data.append((slide_nearby_shops(ent_shops, header="🎬 영화관 / 서점", subtitle=ent_sub), 3.0, _audio(ai))); ai += 1
+                    slides_data.append((slide_nearby_shops(ent_shops, header="🎬 영화관 / 서점"), 3.0, _audio(ai))); ai += 1
                 park_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("공원", "근린공원"))]
                 if park_shops:
-                    park_sub = "  ".join(f"{s['name']} {s['distance']}m" for s in park_shops[:2])
-                    slides_data.append((slide_nearby_shops(park_shops, header="🌳 공원", subtitle=park_sub), 3.0, _audio(ai))); ai += 1
-                # 7. 옵션 + 방향 + 준공연도 + 방 구성
-                opts_sub = f"{float(size_pyeong)}평 {int(floor)}층" + (f"  {facing}" if facing else "") + (f"  {room_config}" if room_config else "")
+                    slides_data.append((slide_nearby_shops(park_shops, header="🌳 공원"), 3.0, _audio(ai))); ai += 1
+                # 7. 옵션 + 방향 + 준공연도 + 방 구성 (자막 없음)
                 slides_data.append((slide_room_options(
                     floor=int(floor), size_pyeong=float(size_pyeong), year_built=int(year_built),
                     options=list(options), facing=str(facing) if facing else "",
                     room_config=str(room_config) if room_config else "",
-                    subtitle=opts_sub,
                 ), 3.0, _audio(ai))); ai += 1
                 # 8. 가격 + 전세대출
                 price_sub = price_str + ("  전세대출 가능" if loan_available else "")

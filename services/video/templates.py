@@ -307,24 +307,45 @@ def slide_room_options(
     draw.line([(80, y), (W - 80, y)], fill=GRAY, width=2)
     y += 40
 
-    # 옵션 태그
+    # 옵션 태그 (행별 가운데 정렬)
     _draw_text_centered(draw, y, "옵션", f_small, GRAY)
     y += 60
 
     tag_pad, tag_gap = 20, 16
-    row_x, row_y = 80, y
+    tag_h = 50
+    max_w = W - 160  # 좌우 여백 80씩
+
+    # 1패스: 행 분리
+    rows: list[list[tuple[str, float]]] = []  # rows[i] = [(text, tag_w), ...]
+    current_row: list[tuple[str, float]] = []
+    current_row_w = 0
     for opt in options:
         bbox = draw.textbbox((0, 0), opt, font=f_tag)
         tw = bbox[2] - bbox[0] + tag_pad * 2
-        if row_x + tw > W - 80:
-            row_x = 80
-            row_y += 60
-        draw.rounded_rectangle(
-            [(row_x, row_y), (row_x + tw, row_y + 50)],
-            radius=10, outline=GRAY, width=2,
-        )
-        draw.text((row_x + tag_pad, row_y + 8), opt, font=f_tag, fill=WHITE)
-        row_x += tw + tag_gap
+        needed = tw if not current_row else tw + tag_gap
+        if current_row and current_row_w + needed > max_w:
+            rows.append(current_row)
+            current_row = [(opt, tw)]
+            current_row_w = tw
+        else:
+            current_row.append((opt, tw))
+            current_row_w += needed
+    if current_row:
+        rows.append(current_row)
+
+    # 2패스: 행별 가운데 정렬하여 그리기
+    row_y = y
+    for row in rows:
+        row_total_w = sum(tw for _, tw in row) + tag_gap * (len(row) - 1)
+        rx = (W - row_total_w) // 2
+        for opt, tw in row:
+            draw.rounded_rectangle(
+                [(rx, row_y), (rx + tw, row_y + tag_h)],
+                radius=10, outline=GRAY, width=2,
+            )
+            draw.text((rx + tag_pad, row_y + 8), opt, font=f_tag, fill=WHITE)
+            rx += tw + tag_gap
+        row_y += tag_h + 16
 
     return _draw_subtitle(img, subtitle)
 

@@ -174,48 +174,42 @@ subway_subtitle = "  ".join(
 save_slide(f"{n+1:02d}_subway.png", slide_subway(subway_list, map_path=map_path, subtitle=subway_subtitle), subway_subtitle)
 n += 1
 
-# 6. 근처 편의시설 — 카테고리별 분리
+# 6. 근처 편의시설 — 카테고리별 분리 (자막 없음)
 # 마트류 (슈퍼,마트 / 종합생활용품 / 시장 / 백화점)
 mart_kw = ("슈퍼,마트", "종합생활용품", "시장", "백화점")
 mart_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in mart_kw)]
 if mart_shops:
-    mart_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in mart_shops[:2])
     save_slide(f"{n+1:02d}_shops_mart.png",
-               slide_nearby_shops(mart_shops, header="🏪 마트 / 시장", subtitle=mart_subtitle), mart_subtitle)
+               slide_nearby_shops(mart_shops, header="🏪 마트 / 시장"))
     n += 1
 
 # 편의점
 conv_shops = [s for s in shops_list if "편의점" in s.get("category", "")]
 if conv_shops:
-    conv_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in conv_shops[:2])
     save_slide(f"{n+1:02d}_shops_conv.png",
-               slide_nearby_shops(conv_shops, header="🏪 편의점", subtitle=conv_subtitle), conv_subtitle)
+               slide_nearby_shops(conv_shops, header="🏪 편의점"))
     n += 1
 
 # 영화관 / 서점
 ent_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("영화관", "서점"))]
 if ent_shops:
-    ent_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in ent_shops[:2])
     save_slide(f"{n+1:02d}_shops_ent.png",
-               slide_nearby_shops(ent_shops, header="🎬 영화관 / 서점", subtitle=ent_subtitle), ent_subtitle)
+               slide_nearby_shops(ent_shops, header="🎬 영화관 / 서점"))
     n += 1
 
 # 공원
 park_shops = [s for s in shops_list if any(kw in s.get("category", "") for kw in ("공원", "근린공원"))]
 if park_shops:
-    park_subtitle = "  ".join(f"{s['name']} {s['distance']}m" for s in park_shops[:2])
     save_slide(f"{n+1:02d}_shops_park.png",
-               slide_nearby_shops(park_shops, header="🌳 공원", subtitle=park_subtitle), park_subtitle)
+               slide_nearby_shops(park_shops, header="🌳 공원"))
     n += 1
 
-# 7. 옵션 + 방향 + 준공연도 + 방 구성
-options_subtitle = f"{SIZE_PYEONG}평 {FLOOR}층  {FACING}  {ROOM_CONFIG}" if FACING else f"{SIZE_PYEONG}평 {FLOOR}층  {ROOM_CONFIG}"
+# 7. 옵션 + 방향 + 준공연도 + 방 구성 (자막 없음)
 save_slide(f"{n+1:02d}_room_options.png",
            slide_room_options(
                floor=FLOOR, size_pyeong=SIZE_PYEONG, year_built=YEAR_BUILT,
                options=OPTIONS, facing=FACING, room_config=ROOM_CONFIG,
-               subtitle=options_subtitle,
-           ), options_subtitle)
+           ))
 n += 1
 
 # 8. 가격 + 전세대출
