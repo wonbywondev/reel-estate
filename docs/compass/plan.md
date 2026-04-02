@@ -84,8 +84,9 @@
   - 공개 URL: Cloudflare Tunnel (cloudflared) 자동 실행 — ngrok-free.dev는 Instagram에서 차단됨
   - 업로드 흐름: 로컬 파일 서버 → cloudflared 터널 → 컨테이너 생성 → polling → 게시
 - Streamlit 업로드 버튼 구현 완료 (app.py)
-- 미완: 업로드 전 ffmpeg 재인코딩 — 생성 영상 비트레이트 ~266kbps, Instagram 최소 3.5Mbps 요구
-  - 방안: `uploader.py` 또는 `app.py`에서 업로드 직전 재인코딩 추가
+- 영상 재인코딩 + R2 업로드 구현 완료
+  - ffmpeg CBR 3.5Mbps / baseline / 48kHz로 재인코딩 후 R2 presigned URL → Instagram API
+  - trycloudflare.com, ngrok-free.dev 모두 Meta 서버에서 차단 확인 → R2로 대체
 - 위치 태그 2개 (사무소 + 매물) — 추후 구현
 
 ---

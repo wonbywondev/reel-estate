@@ -155,7 +155,8 @@ CREATE TABLE rooms (
 - 인증: 사용자 토큰 → 페이지 토큰 자동 교환 (`GET /{PAGE_ID}?fields=access_token`)
 - 공개 URL 방식: **Cloudflare Tunnel** (`cloudflared`) 로컬 서버 자동 생성 — ngrok-free.dev는 Instagram API에서 차단됨
 - 업로드 흐름: 로컬 HTTP 서버 시작 → cloudflared 터널 → 영상 URL → 미디어 컨테이너 생성(REELS) → 처리 완료 polling → 게시(publish)
-- 영상 스펙: Instagram은 최소 3.5Mbps 이상 요구 → 업로드 전 ffmpeg 재인코딩 필요 (현재 생성 영상은 ~266kbps로 너무 낮음)
+- 영상 스펙: Instagram 요구사항 → H.264 baseline, CBR 3.5Mbps, AAC 128kbps, 48kHz (현재 생성 영상은 ~266kbps라 업로드 전 ffmpeg 재인코딩 필요)
+- 공개 URL: **Cloudflare R2** presigned URL 사용 — trycloudflare.com/ngrok-free.dev 모두 Meta 서버에서 차단됨, R2로 성공 확인
 - 위치 태그 2개: 공인중개사 사무소 + 매물 건물 (추후)
 
 ### n8n 확장

@@ -76,7 +76,8 @@
 - [x] `services/instagram/uploader.py` 구현 (미디어 컨테이너 생성 → polling → 게시)
 - [x] 공개 URL 방식: Cloudflare Tunnel 자동 실행 (ngrok-free.dev는 Instagram API 차단)
 - [x] Streamlit 업로드 버튼 (완전 자동화 — 파일 서버 + 터널 + 업로드)
-- [ ] 업로드 전 ffmpeg 재인코딩 (Instagram 최소 3.5Mbps, 현재 ~266kbps)
+- [x] 업로드 전 ffmpeg 재인코딩 (H.264 baseline, CBR 3.5Mbps, AAC 128kbps 48kHz)
+- [x] Cloudflare R2 presigned URL로 영상 공개 (tunnel 방식 모두 Meta 서버 차단 확인)
 - [ ] 위치 태그 2개 (사무소 + 매물) — 추후
 
 ---

@@ -221,6 +221,82 @@ def _get_ngrok_url(port: int) -> str:
 
 
 
+def upload_to_r2(file_path: str, expires_in: int = 3600) -> str:
+    """파일을 Cloudflare R2에 업로드하고 presigned URL 반환.
+
+    Args:
+        file_path: 업로드할 로컬 파일 경로
+        expires_in: presigned URL 유효 시간 (초, 기본 1시간)
+
+    Returns:
+        presigned URL
+    """
+    import boto3
+    endpoint = os.environ.get("R2_ENDPOINT", "")
+    access_key = os.environ.get("R2_ACCESS_KEY_ID", "")
+    secret_key = os.environ.get("R2_SECRET_ACCESS_KEY", "")
+    bucket = os.environ.get("R2_BUCKET", "")
+    if not all([endpoint, access_key, secret_key, bucket]):
+        raise RuntimeError("R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET 환경변수를 설정하세요.")
+
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name="auto",
+    )
+    key = Path(file_path).name
+    s3.upload_file(file_path, bucket, key)
+    url = s3.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket, "Key": key},
+        ExpiresIn=expires_in,
+    )
+    return url
+
+
+def reencode_for_instagram(video_path: str) -> str:
+    """Instagram 요구사항에 맞게 영상 재인코딩.
+
+    Instagram Reels 최소 스펙: H.264, 3.5Mbps 이상, AAC 128kbps 이상.
+    출력 파일은 같은 디렉터리에 _ig 접미사로 저장.
+
+    Args:
+        video_path: 원본 MP4 경로
+
+    Returns:
+        재인코딩된 MP4 경로
+    """
+    src = Path(video_path).resolve()
+    dst = src.parent / "upload_ig.mp4"
+    result = subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-i", str(src),
+            "-c:v", "libx264",
+            "-b:v", "4000k",
+            "-minrate", "4000k",
+            "-maxrate", "4000k",
+            "-bufsize", "4000k",
+            "-nal-hrd", "cbr",
+            "-profile:v", "high",
+            "-level", "4.0",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-ar", "44100",
+            "-movflags", "+faststart",
+            str(dst),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"ffmpeg 재인코딩 실패:\n{result.stderr}")
+    return str(dst)
+
+
 def serve_and_upload(
     video_path: str,
     caption: str = "",
