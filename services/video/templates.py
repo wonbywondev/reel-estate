@@ -189,26 +189,14 @@ def slide_street(sv_path: str, subtitle: str = "") -> Image.Image:
 # ---------------------------------------------------------------------------
 
 def slide_interior(photo_path: str, subtitle: str = "", label: str = "") -> Image.Image:
-    """실내 사진을 9:16 프레임에 꽉 채워 배치. label이 있으면 우상단에 표시."""
+    """실내 사진을 9:16 프레임에 꽉 채워 배치. label은 하단 자막으로만 표시."""
+    _ = label
     img = _base()
     try:
         photo = Image.open(photo_path).convert("RGB")
         img.paste(_fit_cover(photo, W, H), (0, 0))
     except Exception:
         pass
-    if label:
-        draw = ImageDraw.Draw(img)
-        f = _font(44)
-        bbox = draw.textbbox((0, 0), label, font=f)
-        tw = bbox[2] - bbox[0]
-        pad = 16
-        rx = W - tw - pad * 2 - 40
-        ry = 60
-        draw.rounded_rectangle(
-            [(rx, ry), (rx + tw + pad * 2, ry + bbox[3] - bbox[1] + pad * 2)],
-            radius=8, fill=(0, 0, 0, 180),
-        )
-        draw.text((rx + pad, ry + pad), label, font=f, fill=WHITE)
     return _draw_subtitle(img, subtitle)
 
 
