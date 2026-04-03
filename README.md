@@ -109,27 +109,37 @@ python3 -m streamlit run app.py
 Gen_for_SmallBusiness/
 ├── app.py                    # Streamlit 진입점
 ├── services/
-│   ├── map/
-│   │   ├── geocoding.py      # 주소 → 좌표
-│   │   ├── static_map.py     # Static Map 이미지 다운로드 (넓은/좁은)
-│   │   ├── nearby.py         # 근처 편의시설 (네이버 Local Search API)
-│   │   └── subway/           # 인근 지하철역 + 도보 거리
-│   ├── street/
-│   │   └── playwright_shot.py  # 스트리트뷰 캡처
 │   ├── ai/
 │   │   ├── copy_writer.py    # 광고 카피 + 나레이션 생성
+│   │   ├── prompts.py        # 프롬프트 템플릿
 │   │   └── tts.py            # TTS 서버 인터페이스
-│   ├── video/
-│   │   ├── renderer.py       # MoviePy 영상 렌더링
-│   │   └── templates.py      # 슬라이드 레이아웃
-│   └── instagram/
-│       └── uploader.py       # Cloudflare R2 + Instagram Graph API 업로드
+│   ├── map/
+│   │   ├── geocoding.py      # 주소 → 좌표
+│   │   ├── nearby.py         # 근처 편의시설 (네이버 Local Search API)
+│   │   ├── static_map.py     # Static Map 이미지 다운로드 (넓은/좁은)
+│   │   └── subway/           # 인근 지하철역 + 도보 거리
+│   │       ├── finder.py
+│   │       └── station_db.py
+│   ├── street/
+│   │   └── playwright_shot.py  # 스트리트뷰 캡처
+│   ├── upload/
+│   │   └── instagram.py      # Cloudflare R2 + Instagram Graph API 업로드
+│   └── video/
+│       ├── renderer.py       # MoviePy 영상 렌더링
+│       └── templates.py      # 슬라이드 레이아웃
 ├── tts_server/
 │   ├── main.py               # FastAPI POST /synthesize
 │   └── model.py              # edge-tts 기반 한국어 TTS
 ├── db/
 │   ├── database.py           # SQLite CRUD
 │   └── models.py             # 데이터 스키마
+├── tests/
+│   ├── ai/
+│   ├── db/
+│   ├── map/
+│   ├── street/
+│   ├── upload/
+│   └── video/
 ├── assets/
 │   ├── fonts/                # 한글 자막 폰트
 │   └── data/subway/          # 지하철역 공공데이터 CSV

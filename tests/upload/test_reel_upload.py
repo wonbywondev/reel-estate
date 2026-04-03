@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from services.instagram.uploader import upload_to_r2, upload_reel
+from services.upload.instagram import upload_to_r2, upload_reel
 
 SRC = Path("output/reels_인천_연수구_컨벤시.mp4").resolve()
 OUT = SRC.parent / "test_ig.mp4"

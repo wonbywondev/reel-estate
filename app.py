@@ -5,20 +5,23 @@ import streamlit as st
 
 from db.database import Database
 from db.models import Room
+
 from services.map.geocoding import geocode
 from services.map.subway import find_nearby_subways
 from services.map.static_map import download_static_map, download_static_map_wide
 from services.map.nearby import find_nearby_shops
+
 from services.street.playwright_shot import take_street_view
+
 from services.ai.copy_writer import generate_copy
 from services.ai.tts import text_to_speech
+
 from services.video.templates import (
     slide_title, slide_map, slide_street, slide_interior,
     slide_subway, slide_room_options, slide_price,
     slide_nearby_shops, slide_cta,
 )
 from services.video.renderer import render_video
-from services.instagram.uploader import serve_and_upload
 
 # ---------------------------------------------------------------------------
 # 상수
@@ -37,11 +40,11 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # ---------------------------------------------------------------------------
 
 if "db" not in st.session_state:
-    db = Database()
-    db.init()
-    st.session_state["db"] = db
+    _db = Database()
+    _db.init()
+    st.session_state["db"] = _db
 
-db: Database = st.session_state["db"]
+_db = st.session_state["db"]
 
 # ---------------------------------------------------------------------------
 # 페이지 설정
@@ -57,7 +60,7 @@ st.title("🏠 부동산 릴스 자동 생성기")
 with st.sidebar:
     st.header("📋 매물 목록")
 
-    rooms = db.list_rooms()
+    rooms = _db.list_rooms()
     if not rooms:
         st.caption("아직 생성된 매물이 없습니다.")
     else:
@@ -89,7 +92,7 @@ with st.sidebar:
 
                 if st.button("🗑️ 삭제", key=f"del_{room.id}"):
                     if room.id:
-                        db.delete_room(room.id)
+                        _db.delete_room(room.id)
                     st.rerun()
 
 # ---------------------------------------------------------------------------
@@ -98,7 +101,7 @@ with st.sidebar:
 
 regen_room: Room | None = None
 if "regen_room_id" in st.session_state:
-    regen_room = db.get_room(st.session_state.pop("regen_room_id"))
+    regen_room = _db.get_room(st.session_state.pop("regen_room_id"))
 
 # ---------------------------------------------------------------------------
 # 레이아웃
@@ -450,9 +453,9 @@ with right:
                 facing=str(facing) if facing else None,
                 room_config=str(room_config) if room_config else None,
             )
-            room_id = db.insert_room(room)
+            room_id = _db.insert_room(room)
             if video_path:
-                db.update_video_path(room_id, video_path)
+                _db.update_video_path(room_id, video_path)
 
             status.update(label="✅ 완료!", state="complete", expanded=False)
 
@@ -518,7 +521,7 @@ with right:
             log = st.empty()
             with st.spinner("업로드 중..."):
                 try:
-                    from services.instagram.uploader import (
+                    from services.upload.instagram import (
                         reencode_for_instagram, upload_to_r2, upload_reel,
                     )
 
