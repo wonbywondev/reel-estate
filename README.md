@@ -5,6 +5,11 @@
 **타겟**: 공인중개사 (소상공인)  
 **핵심 가치**: 도로명 주소만 입력하면 릴스 광고 자동 생성
 
+## demo
+
+https://github.com/user-attachments/assets/03aa1db3-0ec4-4f94-bda8-427fb3e56473
+
+
 ---
 
 ## 주요 기능
