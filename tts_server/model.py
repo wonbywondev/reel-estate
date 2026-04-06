@@ -21,7 +21,7 @@ async def _synthesize_async(text: str) -> bytes:
     communicate = edge_tts.Communicate(text, voice=VOICE)
     buf = io.BytesIO()
     async for chunk in communicate.stream():
-        if chunk["type"] == "audio":
+        if chunk["type"] == "audio" and "data" in chunk:
             buf.write(chunk["data"])
     buf.seek(0)
     return buf.read()
