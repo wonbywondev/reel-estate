@@ -57,7 +57,7 @@ https://github.com/user-attachments/assets/03aa1db3-0ec4-4f94-bda8-427fb3e56473
 ### 설치
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/wonbywondev/reel-estate
 cd reel-estate
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
