@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/03aa1db3-0ec4-4f94-bda8-427fb3e56473
 
 ```bash
 git clone <repo-url>
-cd Gen_for_SmallBusiness
+cd reel-estate
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -111,7 +111,7 @@ python3 -m streamlit run app.py
 ## 프로젝트 구조
 
 ```
-Gen_for_SmallBusiness/
+reel-estate/
 ├── app.py                    # Streamlit 진입점
 ├── services/
 │   ├── ai/
